@@ -49,11 +49,42 @@ a[href]:disabled,button:disabled{cursor:not-allowed}
 <section id="how" class="section"><div class="section-head"><h2>⚡ How It Works</h2></div><div class="steps"><article class="step"><strong>STEP 01</strong><h3>Choose a Template</h3><p>Discover a style that fits your moment and your mood.</p></article><article class="step"><strong>STEP 02</strong><h3>Customize</h3><p>Add your photos, clips, text and music to personalize it.</p></article><article class="step"><strong>STEP 03</strong><h3>Preview & Export</h3><p>Preview your creation and export the available video format.</p></article><article class="step"><strong>STEP 04</strong><h3>Share Your Video</h3><p>Download your exported video and share it yourself.</p></article></div></section></div>
 </main>
 <footer><div class="wrap foot"><a class="brand" href="#"><span class="brandmark"><img src="assets/hasan-logo.webp" alt="HASAN Video Studio logo"></span><span class="brandname">HASAN<small>VIDEO STUDIO</small><em>👑 PaliaAPK HUB</em></span></a><div class="footlinks"><a href="#how">About</a><a href="mailto:contact@paliaapkhub.com">Contact</a></div><span>Developer By <b style="color:#078563">ShanPalia</b> · © 2026 HASAN</span></div></footer>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 <script>
 document.querySelectorAll('a[href^="#"]').forEach(a=>a.addEventListener('click',e=>{const target=document.querySelector(a.getAttribute('href'));if(target){e.preventDefault();target.scrollIntoView({behavior:'smooth'});}}));
-
-// Template gallery intentionally starts empty. Only admin-published Firestore documents may populate it.
-// Firebase config + admin publishing workflow will be connected in the next setup step.
+const firebaseConfig={apiKey:"AIzaSyCn7GUkOaFO4l0x1zM5mwW4hFkW2ISxR10",authDomain:"shanpalia-apk-hub.firebaseapp.com",projectId:"shanpalia-apk-hub",storageBucket:"shanpalia-apk-hub.firebasestorage.app",messagingSenderId:"270953807883",appId:"1:270953807883:web:3dafa57f5cc4170e77870e",measurementId:"G-VW7W91CR9F"};
+const gallery=document.getElementById("templateGallery");
+function showGalleryMessage(message){gallery.innerHTML="";const box=document.createElement("div");box.className="template-empty";box.style.cssText="grid-column:1/-1;padding:38px 22px;text-align:center;border:1px dashed #a8dfc9;border-radius:18px;background:#fff";box.textContent=message;gallery.append(box);}
+function validHttpUrl(value){try{const u=new URL(value,location.href);return ["https:","http:"].includes(u.protocol)?u.href:"";}catch{return "";}}
+function renderPublishedTemplates(items){
+ gallery.innerHTML="";
+ if(!items.length){showGalleryMessage("No templates published yet. New templates will appear here after the admin adds and publishes them.");return;}
+ items.sort((a,b)=>(b.updatedAt?.seconds||0)-(a.updatedAt?.seconds||0));
+ items.forEach(t=>{
+  const card=document.createElement("article");card.className="template";
+  const link=validHttpUrl(t.editorLink)||"./editor.html";
+  const thumb=document.createElement("div");thumb.className="thumb";
+  const imgUrl=validHttpUrl(t.imageUrl);
+  if(imgUrl){const img=document.createElement("img");img.src=imgUrl;img.alt=t.title||"Video template";img.loading="lazy";thumb.append(img);}
+  else{thumb.textContent="🎬";}
+  const titleOverlay=document.createElement("span");titleOverlay.textContent=t.title||"Video Template";thumb.append(titleOverlay);
+  const meta=document.createElement("div");meta.className="meta";
+  const name=document.createElement("strong");name.textContent=t.category||"Template";
+  const tag=document.createElement("span");tag.className="tag";tag.textContent=t.badge||"Use Template";
+  meta.append(name,tag);card.append(thumb,meta);
+  card.tabIndex=0;card.setAttribute("role","link");card.setAttribute("aria-label","Open "+(t.title||"template"));
+  const open=()=>{const url=new URL(link,location.href);if(url.pathname.endsWith("editor.html"))url.searchParams.set("template",t.title||"");location.href=url.href;};
+  card.addEventListener("click",open);card.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();open();}});
+  gallery.append(card);
+ });
+}
+try{
+ if(!firebase.apps.length)firebase.initializeApp(firebaseConfig);
+ firebase.firestore().collection("hasan_templates").where("published","==",true).get()
+ .then(snapshot=>renderPublishedTemplates(snapshot.docs.map(d=>d.data())))
+ .catch(error=>{console.error("Template gallery:",error);showGalleryMessage("Templates are temporarily unavailable. Please try again later.");});
+}catch(error){console.error(error);showGalleryMessage("Templates are temporarily unavailable. Please try again later.");}
 </script>
 \n
 <script>
