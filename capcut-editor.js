@@ -1,6 +1,25 @@
 (()=>{const $=id=>document.getElementById(id),canvas=$('preview'),ctx=canvas.getContext('2d');let clips=[],audioUrl='',audio=null,playing=false,recorder=null,raf=0;const params=new URLSearchParams(location.search),template=params.get('template')||'Custom Edit';$('templateName').value=template;$('projectName').textContent=template+' Project';
 const presets={'Hero Entry':['THE HERO','contrast(1.35) saturate(1.25)'],'Love Story':['FOREVER ♥','sepia(.15) saturate(1.2)'],'Cinematic Ride':['CINEMATIC','contrast(1.35) saturate(1.25)'],'Portrait Glow':['GLOW UP','brightness(1.15) saturate(1.4)']};const preset=presets[template];if(preset){$('overlayText').value=preset[0];$('filter').value=preset[1];}
-function duration(c){return c.type==='video'?(c.duration||5):Math.max(1,Number($('duration').value)||4)}function total(){return clips.reduce((s,c)=>s+duration(c),0)}function text(){let t=$('overlayText').value;if(t){ctx.save();ctx.textAlign='center';ctx.font='bold 42px Arial';ctx.lineWidth=5;ctx.strokeStyle='#000b';ctx.fillStyle='white';ctx.strokeText(t,270,830,480);ctx.fillText(t,270,830,480);ctx.restore();}}
+
+const templateImages={
+ 'Hero Entry':'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=900&q=85',
+ 'Love Story':'https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?auto=format&fit=crop&w=900&q=85',
+ 'Cinematic Ride':'https://images.unsplash.com/photo-1500534623283-312aade485b7?auto=format&fit=crop&w=900&q=85',
+ 'Portrait Glow':'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=900&q=85'
+};
+const previewBtn=$('previewTemplate'),templateVideo=$('templateVideo');
+if(templateVideo){templateVideo.poster=templateImages[template]||templateImages['Hero Entry'];}
+if(previewBtn&&templateVideo){
+ previewBtn.onclick=()=>{
+  templateVideo.src='https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4';
+  templateVideo.classList.remove('hidden');canvas.classList.add('hidden');
+  templateVideo.currentTime=0;
+  templateVideo.play().then(()=>{previewBtn.textContent='❚❚ Playing Template Preview';}).catch(()=>{alert('Preview video load nahi hua. Internet connection check karein.');});
+ };
+ templateVideo.onended=()=>{previewBtn.textContent='▶ Play Template Preview';};
+ templateVideo.onpause=()=>{previewBtn.textContent='▶ Play Template Preview';};
+}
+\nfunction duration(c){return c.type==='video'?(c.duration||5):Math.max(1,Number($('duration').value)||4)}function total(){return clips.reduce((s,c)=>s+duration(c),0)}function text(){let t=$('overlayText').value;if(t){ctx.save();ctx.textAlign='center';ctx.font='bold 42px Arial';ctx.lineWidth=5;ctx.strokeStyle='#000b';ctx.fillStyle='white';ctx.strokeText(t,270,830,480);ctx.fillText(t,270,830,480);ctx.restore();}}
 function draw(src){let sw=src.videoWidth||src.naturalWidth||540,sh=src.videoHeight||src.naturalHeight||960,scale=Math.max(540/sw,960/sh),w=sw*scale,h=sh*scale;ctx.save();ctx.filter=$('filter').value;ctx.drawImage(src,(540-w)/2,(960-h)/2,w,h);ctx.restore();text();}
 function placeholder(){ctx.fillStyle='#142c25';ctx.fillRect(0,0,540,960);ctx.fillStyle='white';ctx.textAlign='center';ctx.font='bold 32px Arial';ctx.fillText('HASAN VIDEO STUDIO',270,460);ctx.font='20px Arial';ctx.fillText('Import media to start',270,510);}
 function render(c=clips[0]){ctx.clearRect(0,0,540,960);if(!c){placeholder();return;}if(c.type==='image'){let im=new Image();im.onload=()=>{ctx.clearRect(0,0,540,960);draw(im)};im.src=c.url;}else{let v=document.createElement('video');v.src=c.url;v.muted=true;v.onloadeddata=()=>{ctx.clearRect(0,0,540,960);draw(v)};}}
