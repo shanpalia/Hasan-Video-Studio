@@ -58,6 +58,6 @@ document.querySelectorAll('a[href^="#"]').forEach(a=>a.addEventListener('click',
 \n
 <script>
 // Hidden admin entry: click the HASAN Video Studio brand five times.
-(()=>{let taps=0,timer;document.querySelectorAll('.brand').forEach(el=>{el.addEventListener('click',e=>{taps++;clearTimeout(timer);if(taps>=5){e.preventDefault();location.href='./admin.html';return;}timer=setTimeout(()=>{taps=0;},2200);});});})();
+(()=>{let taps=0,timer;document.querySelectorAll('.brand').forEach(el=>{el.addEventListener('click',e=>{e.preventDefault();taps++;clearTimeout(timer);if(taps>=5){location.href='./admin.html';return;}timer=setTimeout(()=>{taps=0;},2200);});});})();
 </script>
 </body></html>
