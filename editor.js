@@ -98,8 +98,7 @@
  ];
  document.querySelectorAll('.template').forEach((card,i)=>card.addEventListener('click',()=>{
   const p=presets[i]||presets[0];$('titleInput').value=p.title;$('filterSelect').value=p.filter;$('transitionSelect').value='fade';
-  renderStatic();status(p.name+' template selected. Apni photos/videos add karke preview karein.');
-  $('editor').scrollIntoView({behavior:'smooth'});
+  window.location.href='editor.html?template='+encodeURIComponent(p.name);
  }));
  drawPlaceholder();
 })();
