@@ -27,6 +27,9 @@ header{height:82px;background:#ffffffed;border-bottom:1px solid var(--line);disp
 .clip-chip.active{background:#087d63;color:white}
 .editor-status{font-size:12px;color:var(--muted);min-height:18px}
 @media(max-width:750px){.editor-grid{grid-template-columns:1fr}.preview-box{min-height:300px}.editor-panel{padding:14px}}
+/* Consistent hand cursor on every interactive surface */
+a[href],button,[role="button"],[role="link"],.template,.category,.quick a,.view,.brand,.clip-chip,.tool{cursor:pointer}
+a[href]:disabled,button:disabled{cursor:not-allowed}
 </style>
 </head>
 <body>
