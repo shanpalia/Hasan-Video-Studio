@@ -88,5 +88,18 @@
   };
   requestAnimationFrame(exportFrame);
  };
+ 
+ // Template cards apply a ready-made look and open the editor.
+ const presets=[
+  {name:'Hero Entry',title:'THE HERO',filter:'contrast(1.35) saturate(1.25)'},
+  {name:'Love Story',title:'FOREVER ♥',filter:'sepia(.15) saturate(1.2)'},
+  {name:'Cinematic Ride',title:'CINEMATIC',filter:'contrast(1.35) saturate(1.25)'},
+  {name:'Portrait Glow',title:'GLOW UP',filter:'brightness(1.15) saturate(1.4)'}
+ ];
+ document.querySelectorAll('.template').forEach((card,i)=>card.addEventListener('click',()=>{
+  const p=presets[i]||presets[0];$('titleInput').value=p.title;$('filterSelect').value=p.filter;$('transitionSelect').value='fade';
+  renderStatic();status(p.name+' template selected. Apni photos/videos add karke preview karein.');
+  $('editor').scrollIntoView({behavior:'smooth'});
+ }));
  drawPlaceholder();
 })();
