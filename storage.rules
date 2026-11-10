@@ -1,0 +1,17 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    function isHasanAdmin() {
+      return request.auth != null
+        && request.auth.token.email == "shanpalia786@gmail.com"
+        && request.auth.token.email_verified == true;
+    }
+    match /hasan-template-videos/{userId}/{fileName} {
+      allow read: if true;
+      allow write: if isHasanAdmin()
+        && request.auth.uid == userId
+        && request.resource.size < 500 * 1024 * 1024
+        && request.resource.contentType.matches('video/.*');
+    }
+  }
+}
