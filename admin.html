@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#eafff7">
+<title>Admin Login | HASAN Video Studio</title>
+<style>
+:root{--ink:#10382e;--green:#087d63;--mint:#13c99b;--line:#dcefe8;--muted:#648078}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;font-family:Inter,system-ui,Segoe UI,sans-serif;color:var(--ink);background:radial-gradient(circle at 15% 10%,#d8fff0,transparent 32%),linear-gradient(135deg,#f8fffc,#eafaf3);display:grid;place-items:center;padding:24px}
+.shell{width:min(440px,100%)}.brand{display:flex;align-items:center;justify-content:center;gap:13px;margin-bottom:25px;text-align:left}.brand img{width:58px;height:58px;object-fit:cover;border-radius:16px;border:1px solid #a8e6d0;background:#fff}.brand strong{display:block;font-size:22px;letter-spacing:-.8px}.brand small{display:block;color:#079b74;font-size:11px;letter-spacing:2px;margin-top:4px}.brand em{display:block;font-style:normal;font-size:10px;color:#648078;margin-top:4px}
+.card{background:#fff;border:1px solid var(--line);border-radius:24px;padding:30px;box-shadow:0 20px 60px #075c4014}.lock{width:48px;height:48px;border-radius:15px;background:#e4fff4;display:grid;place-items:center;font-size:23px}.card h1{font-size:25px;margin:17px 0 6px}.sub{margin:0 0 22px;color:var(--muted);font-size:13px;line-height:1.6}
+label{display:block;font-size:12px;font-weight:750;margin:15px 0 7px}input{width:100%;padding:13px 14px;border:1px solid #d6eae1;border-radius:12px;font:inherit;outline:none}input:focus{border-color:#13b98d;box-shadow:0 0 0 3px #13c99b20}
+button{width:100%;margin-top:20px;border:0;border-radius:12px;padding:14px;background:linear-gradient(110deg,#087b61,#13c99b);color:#fff;font-weight:800;font-size:14px;cursor:pointer}button:disabled{opacity:.55;cursor:not-allowed}.notice{margin-top:15px;padding:12px;border-radius:12px;background:#fff8e6;color:#76540c;font-size:12px;line-height:1.55}.status{margin-top:12px;font-size:12px;color:#b33;min-height:18px}.back{display:block;text-align:center;margin-top:20px;color:#087d63;text-decoration:none;font-size:13px;font-weight:700}.foot{text-align:center;margin-top:22px;color:#71877f;font-size:11px}
+</style>
+</head>
+<body>
+<main class="shell">
+<div class="brand"><img src="assets/hasan-logo.webp" alt="HASAN Video Studio"><div><strong>HASAN</strong><small>VIDEO STUDIO</small><em>👑 PaliaAPK HUB</em></div></div>
+<section class="card">
+<div class="lock">🔐</div><h1>Admin Login</h1><p class="sub">Sign in to manage templates and publish them on HASAN Video Studio.</p>
+<form id="loginForm">
+<label for="email">Admin Email</label><input id="email" type="email" autocomplete="username" placeholder="Enter admin email" required>
+<label for="password">Password</label><input id="password" type="password" autocomplete="current-password" placeholder="Enter password" required>
+<button id="loginBtn" type="submit" disabled>Sign In</button><div class="status" id="status" role="status"></div>
+</form>
+<div class="notice" id="setupNotice">Firebase Authentication is not connected yet. Add your Firebase Web App configuration to activate secure admin sign-in. Do not enter your password until setup is complete.</div>
+</section>
+<a class="back" href="./index.html">← Back to Website</a>
+<div class="foot">HASAN VIDEO STUDIO · PaliaAPK HUB<br>Developer By ShanPalia · © 2026</div>
+</main>
+<script>
+/* Firebase Web App config will be inserted after you share the project's public web config.
+   Never put a Firebase service-account private key in this page. */
+const firebaseConfig={apiKey:"",authDomain:"",projectId:"",appId:""};
+const configured=Object.values(firebaseConfig).every(Boolean);
+if(configured){
+ const s=document.createElement("script");s.src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js";
+ s.onload=()=>{const a=document.createElement("script");a.src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js";a.onload=()=>{firebase.initializeApp(firebaseConfig);document.getElementById("loginBtn").disabled=false;document.getElementById("setupNotice").textContent="Secure Firebase Authentication is ready. Use the admin account created in Firebase Authentication.";};document.head.appendChild(a);};document.head.appendChild(s);
+}
+document.getElementById("loginForm").addEventListener("submit",async ev=>{ev.preventDefault();const status=document.getElementById("status");if(!configured){status.textContent="Firebase setup is still pending. Login is not active.";return;}const btn=document.getElementById("loginBtn");btn.disabled=true;status.textContent="Signing in…";try{await firebase.auth().signInWithEmailAndPassword(document.getElementById("email").value.trim(),document.getElementById("password").value);status.style.color="#087d63";status.textContent="Signed in successfully. Admin dashboard setup is the next step."; }catch(err){status.textContent=err.message||"Sign-in failed."; }finally{btn.disabled=false;}});
+</script>
+</body></html>
