@@ -14,6 +14,31 @@ button,a.btn{border:0;border-radius:11px;padding:11px 15px;font:inherit;font-siz
 #loginShell{min-height:calc(100vh - 77px);display:grid;place-items:center;padding:25px 0}.login{width:min(430px,100%);background:#fff;border:1px solid var(--line);border-radius:23px;padding:28px;box-shadow:0 20px 60px #075c4014}.login h1{font-size:25px;margin:15px 0 6px}.login .field{margin-top:14px}.login button{width:100%;margin-top:18px}
 footer{text-align:center;padding:20px;color:var(--muted);font-size:11px;border-top:1px solid var(--line)}
 .hidden{display:none!important}
+:root{--ink:#071d19;--green:#087d63;--mint:#12c99a;--line:#e0eee8;--muted:#617a72;--bg:#f7fffb}
+body{background:radial-gradient(ellipse at 88% 0%,#dcfff2 0,transparent 34%),#f8fffc;color:#071d19}
+header{background:rgba(255,255,255,.92);box-shadow:0 5px 22px #064b3610}
+.brand strong{font-size:19px;letter-spacing:-.6px;font-weight:900}
+.brand small{font-weight:850;letter-spacing:2px}
+.page{padding-top:32px}
+.welcome{padding:25px 28px;border:1px solid #c9f0df;border-radius:22px;background:linear-gradient(112deg,#edfff7 0%,#fff 58%,#dcfff2 100%);box-shadow:0 12px 30px #075c4009}
+.welcome h1{font-size:30px;font-weight:900;color:#071d19}
+.welcome .muted{font-size:14px}
+.stat,.panel{border-color:#e3f0ea;box-shadow:0 8px 26px #064b3608}
+.stat{border-radius:19px;padding:20px 21px;position:relative;overflow:hidden}
+.stat:after{content:"";position:absolute;width:66px;height:66px;border-radius:50%;right:-22px;top:-24px;background:#e4fff3}
+.stat small{font-weight:700;letter-spacing:.15px}
+.stat b{font-size:30px;font-weight:900;color:#087d63}
+.panel{border-radius:21px;padding:24px}
+.panel h2{font-size:20px;font-weight:850;letter-spacing:-.35px}
+button,a.btn{border-radius:999px;padding:11px 18px;transition:transform .16s,box-shadow .16s}
+button:hover,a.btn:hover{transform:translateY(-1px);box-shadow:0 7px 18px #087d631c}
+.primary{background:linear-gradient(110deg,#087b61,#13c99b);box-shadow:0 6px 16px #0a9d7826}
+.secondary{background:#effbf5;border-color:#d5f0e3}
+input,select,textarea{border-radius:12px;background:#fcfffd}
+.item{border-radius:16px;padding:14px;background:linear-gradient(110deg,#fff,#fbfffd)}
+.login{border-radius:25px;box-shadow:0 22px 65px #075c4014}
+.video-uploader{border-radius:19px}
+@media(max-width:680px){.welcome{padding:20px;border-radius:18px}.welcome h1{font-size:25px}.panel{padding:17px}}
 @media(max-width:680px){.top{height:auto;min-height:70px;padding:10px 0}.top-actions button{padding:9px;font-size:11px}.stats{grid-template-columns:1fr 1fr}.stat:last-child{grid-column:1/-1}.formgrid{grid-template-columns:1fr}.field.full{grid-column:auto}.welcome{align-items:flex-start;flex-direction:column}.item{grid-template-columns:60px 1fr}.thumb{width:60px;height:60px}.item-actions{grid-column:1/-1;justify-content:flex-start}.panel{padding:16px}}
 \n.video-uploader{border:2px dashed #9bdcc8;border-radius:17px;background:linear-gradient(145deg,#f5fffa,#edfff7);min-height:220px;overflow:hidden;transition:.2s}.video-uploader.dragover{border-color:#087d63;background:#e4fff4;box-shadow:0 0 0 4px #13c99b20}.upload-empty{min-height:220px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:22px;text-align:center;cursor:pointer}.upload-icon{width:48px;height:48px;border-radius:15px;display:grid;place-items:center;background:#d9fff0;color:#087d63;font-size:22px}.upload-empty strong{font-size:15px}.upload-empty span,.upload-empty small{font-size:12px;color:var(--muted)}.upload-empty button{margin-top:5px}.video-preview-wrap{padding:12px}.video-preview-wrap video{display:block;width:100%;max-height:420px;aspect-ratio:16/9;object-fit:contain;background:#071d19;border-radius:12px}.preview-file{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 2px 0;font-size:12px;font-weight:700;overflow-wrap:anywhere}.preview-file button{flex-shrink:0}@media(max-width:600px){.video-uploader,.upload-empty{min-height:190px}.video-preview-wrap video{max-height:300px}.preview-file{align-items:flex-start;flex-direction:column}}\n</style>
 </head>
@@ -44,7 +69,7 @@ const COLLECTION="hasan_templates";
 const TELEGRAM_API="https://hasan-video-studio.onrender.com";
 const $=id=>document.getElementById(id);
 const loadScript=src=>new Promise((resolve,reject)=>{const s=document.createElement("script");s.src=src;s.onload=resolve;s.onerror=()=>reject(new Error("Could not load Firebase SDK. Check internet connection."));document.head.appendChild(s);});
-let auth,db,templates=[],selectedVideo=null;
+let auth,db,templates=[],selectedVideo=null,previewObjectUrl="";
 function setStatus(id,msg,ok=false){$(id).textContent=msg;$(id).style.color=ok?"#087d63":"#a12d2d";}
 function safeUrl(value){if(!value)return "";try{const u=new URL(value);return ["https:","http:"].includes(u.protocol)?u.href:"";}catch{return "";}}
 function resetForm(){ $("templateForm").reset();$("docId").value="";selectedVideo=null;$("videoPreview").pause();$("videoPreview").removeAttribute("src");$("videoPreviewWrap").classList.add("hidden");$("uploadEmpty").classList.remove("hidden");$("videoFile").value="";if(previewObjectUrl){URL.revokeObjectURL(previewObjectUrl);previewObjectUrl="";} $("videoUploadStatus").textContent="";$("formTitle").textContent="＋ Add New Video Template";$("saveBtn").textContent="Save Template";setStatus("formStatus","");}
@@ -94,7 +119,6 @@ async function startDashboard(user){
   
   if(!firebase.apps.length)firebase.initializeApp(firebaseConfig);
   auth=firebase.auth();db=firebase.firestore();
-  let previewObjectUrl="";
   function showSelectedVideo(file){
    if(!file)return;
    if(!file.type.startsWith("video/")){setStatus("videoUploadStatus","Please select a valid video file.");return;}
