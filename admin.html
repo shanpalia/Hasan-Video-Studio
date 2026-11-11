@@ -137,7 +137,20 @@ async function togglePublish(t){try{await db.collection(COLLECTION).doc(t.id).up
 async function deleteTemplate(t){if(!confirm("Delete '"+t.title+"' permanently?"))return;try{await db.collection(COLLECTION).doc(t.id).delete();await loadTemplates();}catch(e){alert("Could not delete template: "+e.message);}}
 async function startDashboard(user){
  if(!user||user.email!==ADMIN_EMAIL){$("loginShell").classList.remove("hidden");$("adminLayout").classList.add("hidden");$("dashboard").classList.add("hidden");$("loginNotice").textContent="This account is signed in but is not authorized as the HASAN Video Studio admin.";await auth.signOut();return;}
- $("loginShell").classList.add("hidden");$("adminLayout").classList.remove("hidden");$("dashboard").classList.remove("hidden");$("logoutBtn").classList.remove("hidden");$("adminIdentity").textContent=user.email;await loadTemplates();
+ $("loginShell").classList.add("hidden");$("adminLayout").classList.remove("hidden");$("dashboard").classList.remove("hidden");$("logoutBtn").classList.remove("hidden");$("adminIdentity").textContent=user.email;
+ try{
+   await user.getIdToken(true);
+ }catch(tokenError){
+   $("dashboardNotice").className="notice";
+   $("dashboardNotice").textContent="Firebase login token refresh failed: "+tokenError.message;
+   return;
+ }
+ if(!user.emailVerified){
+   $("dashboardNotice").className="notice";
+   $("dashboardNotice").textContent="Admin email is not verified in Firebase Authentication. Verify shanpalia786@gmail.com, then sign out and sign in again.";
+   return;
+ }
+ await loadTemplates();
 }
 (async()=>{
  try{
