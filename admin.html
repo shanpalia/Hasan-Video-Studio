@@ -169,7 +169,21 @@ async function startDashboard(user){
   $("loginBtn").disabled=false;$("loginNotice").textContent="Connected to ShanPalia APK Hub Firebase. Sign in with the approved admin email.";
   $("loginForm").addEventListener("submit",async ev=>{ev.preventDefault();$("loginBtn").disabled=true;setStatus("loginStatus","Signing in…",true);try{await auth.signInWithEmailAndPassword($("email").value.trim(),$("password").value);}catch(e){setStatus("loginStatus",e.message);}finally{$("loginBtn").disabled=false;}});
   auth.onAuthStateChanged(user=>{if(user)startDashboard(user).catch(e=>setStatus("loginStatus",e.message));else{$("loginShell").classList.remove("hidden");$("adminLayout").classList.add("hidden");$("dashboard").classList.add("hidden");$("logoutBtn").classList.add("hidden");}});
-  document.querySelectorAll(".side-link[data-target]").forEach(btn=>btn.addEventListener("click",()=>{document.querySelectorAll(".side-link[data-target]").forEach(x=>x.classList.remove("active"));btn.classList.add("active");const target=$(btn.dataset.target);if(target)target.scrollIntoView({behavior:"smooth",block:"start"});}));
+  function showAdminView(view){
+  const overview=$("overview"),stats=document.querySelector(".stats"),form=$("formPanel"),manager=$("templateManager");
+  overview.classList.toggle("hidden",view!=="dashboard");
+  stats.classList.toggle("hidden",view!=="dashboard");
+  form.classList.toggle("hidden",view!=="add");
+  manager.classList.toggle("hidden",view!=="manage"&&view!=="dashboard");
+  if(view==="add"){resetForm();$("formTitle").textContent="＋ Add New Template";$("saveBtn").textContent="Save Template";}
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+document.querySelectorAll(".side-link[data-target]").forEach(btn=>btn.addEventListener("click",()=>{
+  document.querySelectorAll(".side-link[data-target]").forEach(x=>x.classList.remove("active"));
+  btn.classList.add("active");
+  const target=btn.dataset.target;
+  showAdminView(target==="formPanel"?"add":target==="templateManager"?"manage":"dashboard");
+}));
   $("logoutBtn").onclick=()=>auth.signOut();$("templateForm").addEventListener("submit",saveTemplate);$("resetBtn").onclick=resetForm;$("refreshBtn").onclick=loadTemplates;
  }catch(e){$("loginNotice").textContent=e.message;setStatus("loginStatus","Firebase initialization failed.");}
 })();
