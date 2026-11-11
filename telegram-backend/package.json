@@ -1,20 +1,17 @@
 {
   "name": "hasan-video-storage-api",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
-  "description": "Telegram MTProto video storage backend for HASAN VIDEO STUDIO",
+  "description": "Telegram MTProto video storage and playback backend for HASAN VIDEO STUDIO",
   "main": "server.js",
-  "scripts": {
-    "start": "node server.js"
-  },
-  "engines": {
-    "node": ">=20"
-  },
+  "scripts": { "start": "node server.js" },
+  "engines": { "node": ">=20" },
   "dependencies": {
     "express": "^4.21.2",
     "cors": "^2.8.5",
     "multer": "^1.4.5-lts.1",
     "telegram": "^2.26.22",
-    "dotenv": "^16.4.7"
+    "dotenv": "^16.4.7",
+    "firebase-admin": "^13.0.2"
   }
 }
