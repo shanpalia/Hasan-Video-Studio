@@ -54,6 +54,13 @@ async function telegram() {
   }
   return connecting;
 }
+async function telegramChannelEntity(tg) {
+  const wanted = CHANNEL_ID.replace(/^-100/, "").replace(/^-/, "");
+  const dialogs = await tg.getDialogs({ limit: 1000 });
+  const match = dialogs.find(d => d.isChannel && String(d.entity.id) === wanted);
+  if (!match) throw new Error("CHANNEL_ID was not found in this Telegram account's channel dialogs. Make sure the logged-in account is a channel member/admin and CHANNEL_ID is correct.");
+  return match.entity;
+}
 async function requireFirebaseAdmin(req, res, next) {
   try {
     const header = req.get("authorization") || "";
@@ -79,7 +86,8 @@ app.post("/api/upload", requireFirebaseAdmin, upload.single("video"), async (req
   if (!req.file) return res.status(400).json({ error: "Select a video file." });
   try {
     const tg = await telegram();
-    const result = await tg.sendFile(CHANNEL_ID, {
+    const channel = await telegramChannelEntity(tg);
+    const result = await tg.sendFile(channel, {
       file: req.file.path,
       caption: req.body.title || req.file.originalname,
       forceDocument: false,
@@ -107,7 +115,8 @@ app.get("/api/video/:messageId", async (req, res) => {
   let tempDir;
   try {
     const tg = await telegram();
-    const messages = await tg.getMessages(CHANNEL_ID, { ids: [messageId] });
+    const channel = await telegramChannelEntity(tg);
+    const messages = await tg.getMessages(channel, { ids: [messageId] });
     const message = messages && messages[0];
     if (!message || !message.media) return res.status(404).json({ error: "Video not found." });
     tempDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), "hasan-video-play-"));
