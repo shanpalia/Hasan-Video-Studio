@@ -1,6 +1,6 @@
 # HASAN VIDEO STUDIO — Telegram Storage API
 
-This backend uses Telegram MTProto (GramJS), not the standard Bot API upload endpoint, so it can support large video uploads subject to Telegram/account limits and Render request limits.
+This backend stores template videos in a private Telegram channel using MTProto (GramJS), and serves them to the public website through a playback endpoint.
 
 ## Render
 - Root Directory: `telegram-backend`
@@ -10,17 +10,21 @@ This backend uses Telegram MTProto (GramJS), not the standard Bot API upload end
 - Node version: 20+
 
 ## Required Render Environment Variables
-- `API_ID`, `API_HASH`: create Telegram API credentials at https://my.telegram.org
-- `TELEGRAM_SESSION`: GramJS StringSession generated after signing in to the Telegram account that is an admin in the private channel
-- `CHANNEL_ID`: private channel peer ID, usually starts with `-100`
-- `ADMIN_SECRET`: a long random secret
-- `ALLOWED_ORIGIN`: website origin
+- `API_ID`, `API_HASH`: Telegram API credentials from https://my.telegram.org
+- `TELEGRAM_SESSION`: GramJS StringSession for the Telegram account that is a member/admin of the private channel
+- `CHANNEL_ID`: private channel ID, usually starts with `-100`
+- `ALLOWED_ORIGIN`: website origin, normally `https://shanpalia.github.io`
+- Optional: `FIREBASE_PROJECT_ID`, defaults to `shanpalia-apk-hub`
 
-Never commit real tokens, API hashes, session strings, or admin secrets.
+Never commit real API credentials or session strings.
+
+## Authentication
+The admin upload endpoint verifies the Firebase ID token from the existing HASAN admin login and only allows the verified account `shanpalia786@gmail.com`. Do not place a Telegram session or admin secret in browser code.
 
 ## Endpoints
 - `GET /`: service status
 - `GET /health`: configuration status
-- `POST /api/upload`: multipart field `video`; optional `title`; header `x-admin-secret`
+- `POST /api/upload`: multipart field `video`, optional `title`; requires `Authorization: Bearer <Firebase ID token>`
+- `GET /api/video/:messageId`: retrieves the saved Telegram video for browser playback
 
-The frontend must send the upload to this endpoint. Playback/stream proxy and frontend integration must be completed before switching the live website from Firebase Storage.
+The public homepage reads published template metadata from Firestore. Existing Firebase Storage videos remain untouched; newly uploaded videos use Telegram.
