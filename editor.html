@@ -31,6 +31,65 @@ body{background:var(--bg);color:var(--text)}
 .empty,.hint{color:#69867c}
 
 .brand{cursor:pointer}.studio-footer{padding:10px 16px;text-align:center;background:#fff;border-top:1px solid var(--line);color:#648078;font-size:11px}.studio-footer b{color:#087d63}
+
+/* Premium Creator Studio UI */
+:root{--bg:#f1faf6;--panel:#fff;--line:#dcefe6;--mint:#0aa77e;--ink:#123b30;--muted:#71877f;--shadow:0 14px 40px rgba(10,92,64,.08)}
+body{background:radial-gradient(circle at 12% 0%,#e0fff1 0,transparent 28%),#f3faf7;color:var(--ink);font-family:Inter,"Segoe UI",system-ui,sans-serif;overflow-x:hidden}
+.top{height:72px;padding:0 24px;background:rgba(255,255,255,.9);border-bottom:1px solid #dcefe6;box-shadow:0 6px 24px #0a62420a;backdrop-filter:blur(18px);position:relative;z-index:4}
+.brand{font-size:15px;letter-spacing:.2px;line-height:1.2;padding-left:42px;position:relative}
+.brand:before{content:"H";position:absolute;left:0;top:50%;transform:translateY(-50%);width:32px;height:32px;border-radius:11px;background:linear-gradient(145deg,#087b61,#21d6a5);display:grid;place-items:center;color:#fff;font-size:17px;font-weight:950;box-shadow:0 5px 12px #079c7730}
+#projectName{margin-left:auto;margin-right:20px;padding:9px 15px;border:1px solid #dcefe6;border-radius:999px;background:#f6fffb;color:#45685c;font-size:12px;font-weight:750}
+.top-actions button{padding:10px 16px;border-radius:11px;font-weight:750}
+.top-actions #exportBtn{background:linear-gradient(110deg,#087b61,#13c99b);box-shadow:0 7px 17px #0aa77e30;color:white;border:0;padding:11px 20px}
+.layout{height:calc(100vh - 72px - 232px);min-height:450px;grid-template-columns:82px minmax(0,1fr) 310px;gap:0;padding:12px 14px 0;background:transparent}
+.tools,.properties,.stage{border:1px solid #dfefe7;box-shadow:var(--shadow)}
+.tools{border-radius:20px 0 0 20px;padding:16px 8px;gap:10px;background:#fff;z-index:1}
+.tool{width:64px;min-height:66px;border-radius:14px;font-size:10px;font-weight:750;transition:.18s ease;color:#789087}
+.tool b{width:32px;height:32px;border-radius:11px;background:#effaf5;display:grid;place-items:center;color:#087d63;font-size:19px}
+.tool:hover,.tool:focus-visible{background:#e9fff5;color:#087d63;transform:translateY(-2px);outline:0}
+.tool:hover b{background:#d1f8e7}
+.stage{background:#fff;overflow:hidden}
+.stagebar{height:58px;flex-shrink:0;justify-content:center;gap:12px;padding:0 18px;background:#fff;border-bottom:1px solid #e8f2ed}
+.stagebar button{border-radius:10px;padding:9px 15px;font-weight:750;background:#f0faf5;border:1px solid #dcefe6;color:#0a654d}
+#playBtn{background:#087d63;color:#fff;border:0;box-shadow:0 5px 12px #087d6328}
+#timecode{font-variant-numeric:tabular-nums;font-size:12px;font-weight:800;color:#6d857a;background:#f6fbf8;border:1px solid #e4f0e9;border-radius:8px;padding:8px 12px}
+.previewarea{background:radial-gradient(ellipse at center,#fff 0,#f0faf5 62%,#e8f6ef 100%);position:relative;overflow:hidden}
+.previewarea:before{content:"PREVIEW CANVAS  ·  9:16";position:absolute;top:18px;left:20px;font-size:9px;font-weight:900;letter-spacing:1.5px;color:#9ab2a8}
+.previewarea:after{content:"";position:absolute;inset:0;pointer-events:none;background-image:radial-gradient(#b5d8c9 1px,transparent 1px);background-size:22px 22px;opacity:.24}
+#preview{position:relative;z-index:1;border:7px solid white;border-radius:15px;background:#e8f6ef;box-shadow:0 18px 48px #0a624226,0 0 0 1px #d4e9df;max-height:calc(100vh - 430px)}
+.properties{border-radius:0 20px 0 0;background:#fff;padding:20px 18px;overflow:auto}
+.properties h3{font-size:16px;letter-spacing:-.3px;margin:0 0 18px;padding-bottom:14px;border-bottom:1px solid #e8f2ed;display:flex;align-items:center;gap:9px}
+.properties h3:before{content:"✦";width:28px;height:28px;display:grid;place-items:center;background:#e8fff4;color:#079b74;border-radius:9px}
+.field{margin:0 0 14px;padding:0 0 12px;border-bottom:1px solid #f0f5f2}
+.field label{font-size:10px;text-transform:uppercase;letter-spacing:1px;font-weight:850;color:#71877f;margin-bottom:7px}
+.field input:not([type=color]):not([type=range]),.field select{border:1px solid #dcefe6;border-radius:10px;background:#f9fdfb;color:#183e32;padding:10px 11px;outline:none;transition:.18s}
+.field input:focus,.field select:focus{border-color:#49c99c;box-shadow:0 0 0 3px #16b98118}
+.field input[type=color]{width:100%;height:38px;border:1px solid #dcefe6;border-radius:10px;background:#f9fdfb;padding:4px}
+.field input[type=range]{width:100%;accent-color:#0aa77e}
+.properties .primary{border-radius:11px;padding:12px}
+.hint{font-size:11px;line-height:1.6}
+.timeline{height:232px;margin:0 14px 0;padding:14px 18px 16px;background:#fff;border:1px solid #dfefe7;border-top:0;border-radius:0 0 20px 20px;box-shadow:0 14px 40px rgba(10,92,64,.07);overflow:auto}
+.timeline-head{padding-bottom:10px;border-bottom:1px solid #edf4f0}
+.timeline-head b{font-size:14px;letter-spacing:-.2px}
+#mediaCount{background:#effaf5;border:1px solid #dcefe6;padding:5px 10px;border-radius:999px;font-weight:800}
+.timeline-tools{padding:10px 0 8px;gap:7px}
+.timeline-tools button{border-radius:9px;padding:7px 10px;font-size:10px;font-weight:800;background:#f4faf7;border:1px solid #dfefe7;color:#3c6859;transition:.15s}
+.timeline-tools button:hover{background:#e5fff2;border-color:#9be0c5;transform:translateY(-1px)}
+.timeline-tools button.primary{background:linear-gradient(110deg,#087b61,#13c99b);color:white;border:0}
+.timeline-tools label{font-size:10px;font-weight:750;color:#71877f}
+.timeline-tools input{accent-color:#0aa77e}
+.track{min-height:38px}
+.trackname{font-size:9px;font-weight:900;letter-spacing:1px;color:#80968d}
+.trackbody{height:34px;border-bottom:1px solid #eaf2ed;gap:7px;padding-bottom:4px}
+.clip{border-radius:9px;font-size:10px;font-weight:800;box-shadow:0 2px 6px #0a62420b}
+.clip.selected{outline:2px solid #0aa77e;outline-offset:1px;background:#baf0d9}
+.slot{border:1px dashed #a8d8c4!important;color:#50816d!important;background:#f8fffb!important}
+.addclip{background:#087d63!important;border:0!important}
+.textclip{background:#fff5d9!important}.audioclip{background:#eeeaff!important}
+.studio-footer{background:transparent;border:0;padding:9px 16px;color:#8aa096;font-size:10px}
+@media(max-width:1050px){.layout{grid-template-columns:70px minmax(0,1fr) 280px}.properties{padding:16px 13px}}
+@media(max-width:850px){.top{height:64px;padding:0 12px}.layout{height:auto;min-height:0;grid-template-columns:58px minmax(0,1fr);padding:8px 8px 0}.tools{border-radius:16px 0 0 0;padding:12px 4px}.tool{width:48px;min-height:58px}.stage{min-height:470px;border-radius:0 16px 0 0}.properties{display:block;grid-column:1/-1;border-radius:0 0 16px 16px;max-height:none;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 14px;padding:15px}.properties h3,.properties>p{grid-column:1/-1}.previewarea{min-height:400px}#preview{max-height:390px}.timeline{height:auto;min-height:210px;margin:8px;border-radius:16px;border:1px solid #dfefe7}.timeline-tools{flex-wrap:wrap}.studio-footer{padding-bottom:16px}}
+@media(max-width:520px){.top{gap:8px}.brand{font-size:11px;padding-left:36px}.brand:before{width:28px;height:28px}.brand small{font-size:8px!important}.top #projectName{display:none}.top-actions{margin-left:auto}.top-actions button{font-size:11px;padding:8px 10px}.layout{grid-template-columns:52px minmax(0,1fr)}.tool{width:43px;font-size:9px}.tool b{width:28px;height:28px}.stage{min-height:390px}.stagebar{height:48px;padding:0 5px;gap:6px}.stagebar button{padding:7px 9px;font-size:11px}.previewarea{min-height:340px}#preview{max-height:320px}.properties{grid-template-columns:1fr}.timeline-tools button{font-size:9px;padding:6px 7px}.timeline{padding:12px}.trackname{width:48px}.studio-footer{font-size:9px}}
 </style></head><body>
 <header class="top"><a href="index.html" class="brand" style="text-decoration:none;color:inherit;display:flex;flex-direction:column;line-height:1.05"><strong>HASAN <span>VIDEO STUDIO</span></strong><small style="font-size:10px;letter-spacing:1px;color:#648078;margin-top:4px">PaliaAPK HUB · Developer By ShanPalia</small></a><div id="projectName">New Project</div><div class="top-actions"><button onclick="location.href='index.html'">← Home</button><button class="primary" id="exportBtn">Export ↗</button></div></header>
 <div class="layout"><aside class="tools">
