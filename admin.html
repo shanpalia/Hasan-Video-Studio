@@ -14,6 +14,20 @@ button,a.btn{border:0;border-radius:11px;padding:11px 15px;font:inherit;font-siz
 #loginShell{min-height:calc(100vh - 77px);display:grid;place-items:center;padding:25px 0}.login{width:min(430px,100%);background:#fff;border:1px solid var(--line);border-radius:23px;padding:28px;box-shadow:0 20px 60px #075c4014}.login h1{font-size:25px;margin:15px 0 6px}.login .field{margin-top:14px}.login button{width:100%;margin-top:18px}
 footer{text-align:center;padding:20px;color:var(--muted);font-size:11px;border-top:1px solid var(--line)}
 .hidden{display:none!important}
+.admin-layout{min-height:calc(100vh - 77px);display:grid;grid-template-columns:245px minmax(0,1fr);gap:0}
+.admin-sidebar{position:sticky;top:77px;height:calc(100vh - 77px);padding:26px 15px 18px 22px;background:#fff;border-right:1px solid #e2f0e9;display:flex;flex-direction:column;gap:7px}
+.side-label{font-size:10px;font-weight:900;letter-spacing:1.5px;color:#91aaa0;padding:4px 12px 9px}
+.side-label-spaced{margin-top:20px}
+.side-link{width:100%;border:0;background:transparent;color:#526d63;border-radius:12px;padding:12px 13px;display:flex;align-items:center;justify-content:flex-start;gap:12px;font-size:13px;font-weight:750;text-decoration:none;cursor:pointer}
+.side-link span{width:20px;text-align:center;font-size:18px;color:#0a9b76}
+.side-link.active,.side-link:hover{background:#e9fff5;color:#087d63;box-shadow:none;transform:none}
+.side-anchor{box-sizing:border-box}
+.side-bottom{margin-top:auto;border-top:1px solid #e8f2ed;padding:17px 8px 4px;display:flex;align-items:center;gap:10px}
+.admin-avatar{width:38px;height:38px;border-radius:13px;background:linear-gradient(135deg,#087b61,#13c99b);color:white;display:grid;place-items:center;font-size:12px;font-weight:900}
+.side-bottom b,.side-bottom small{display:block}.side-bottom b{font-size:12px}.side-bottom small{font-size:10px;color:#789087;margin-top:3px}
+.admin-main{min-width:0}.admin-main>.page{width:min(1120px,calc(100% - 42px));margin:0 auto}
+@media(max-width:760px){.admin-layout{grid-template-columns:1fr}.admin-sidebar{position:relative;top:auto;height:auto;padding:10px 12px;border-right:0;border-bottom:1px solid #e2f0e9;flex-direction:row;overflow-x:auto;align-items:center;gap:6px}.side-label,.side-label-spaced,.side-bottom{display:none}.side-link{width:auto;white-space:nowrap;padding:10px 12px}.admin-main>.page{width:calc(100% - 24px)}}
+
 :root{--ink:#071d19;--green:#087d63;--mint:#12c99a;--line:#e0eee8;--muted:#617a72;--bg:#f7fffb}
 body{background:radial-gradient(ellipse at 88% 0%,#dcfff2 0,transparent 34%),#f8fffc;color:#071d19}
 header{background:rgba(255,255,255,.92);box-shadow:0 5px 22px #064b3610}
@@ -45,8 +59,19 @@ input,select,textarea{border-radius:12px;background:#fcfffd}
 <body>
 <header><div class="wrap top"><div class="brand"><img src="assets/hasan-logo.webp" alt="HASAN Video Studio"><div><strong>HASAN VIDEO STUDIO</strong><small>ADMIN CONTROL PANEL</small><em>👑 PaliaAPK HUB · Developer By ShanPalia</em></div></div><div class="top-actions"><a class="btn secondary" href="./index.html">← Website</a><button id="logoutBtn" class="secondary hidden">Sign Out</button></div></div></header>
 <main id="loginShell" class="wrap"><section class="login"><div style="font-size:28px">🔐</div><h1>Admin Login</h1><p class="muted">Sign in with the same Firebase account used by PaliaAPK HUB.</p><form id="loginForm"><div class="field"><label for="email">Admin Email</label><input id="email" type="email" autocomplete="username" placeholder="Admin email" required></div><div class="field"><label for="password">Password</label><input id="password" type="password" autocomplete="current-password" placeholder="Password" required></div><button id="loginBtn" class="primary" type="submit" disabled>Sign In</button><div id="loginStatus" class="status"></div></form><div id="loginNotice" class="notice">Connecting to Firebase…</div></section></main>
+<div id="adminLayout" class="admin-layout hidden">
+<aside class="admin-sidebar">
+  <div class="side-label">WORKSPACE</div>
+  <button class="side-link active" data-target="overview"><span>▦</span> Dashboard</button>
+  <button class="side-link" data-target="formPanel"><span>＋</span> Add Template</button>
+  <button class="side-link" data-target="templateManager"><span>▤</span> Manage Templates</button>
+  <div class="side-label side-label-spaced">QUICK LINKS</div>
+  <a class="side-link side-anchor" href="./index.html"><span>↗</span> View Website</a>
+  <div class="side-bottom"><div class="admin-avatar">SP</div><div><b>Admin</b><small>ShanPalia</small></div></div>
+</aside>
+<div class="admin-main">
 <main id="dashboard" class="wrap page hidden">
-<div class="welcome"><div><h1>Template Dashboard</h1><p class="muted">Add, edit, publish and manage the templates shown on your website.</p></div><span id="adminIdentity" class="pill">Admin</span></div>
+<div class="welcome" id="overview"><div><h1>Template Dashboard</h1><p class="muted">Add, edit, publish and manage the templates shown on your website.</p></div><span id="adminIdentity" class="pill">Admin</span></div>
 <div class="stats"><div class="stat"><small>Total templates</small><b id="totalCount">0</b></div><div class="stat"><small>Published</small><b id="publishedCount">0</b></div><div class="stat"><small>Drafts</small><b id="draftCount">0</b></div></div>
 <section class="panel" id="formPanel"><h2 id="formTitle">＋ Add New Template</h2><p class="muted">Only templates you publish will appear on the public homepage.</p>
 <form id="templateForm"><input id="docId" type="hidden"><div class="formgrid">
@@ -58,9 +83,11 @@ input,select,textarea{border-radius:12px;background:#fcfffd}
 <div class="field"><label for="badge">Label</label><select id="badge"><option value="">None</option><option>New</option><option>Popular</option><option>Trending</option></select></div>
 </div><label class="checkrow"><input id="published" type="checkbox"> Publish this template on homepage</label>
 <div class="formactions"><button class="primary" type="submit" id="saveBtn">Save Template</button><button class="secondary" type="button" id="resetBtn">Clear Form</button></div><div id="formStatus" class="status"></div></form></section>
-<section class="panel"><div class="listhead"><div><h2>Your Templates</h2><p class="muted">Edit, publish/unpublish or delete a template.</p></div><button id="refreshBtn" class="secondary">↻ Refresh</button></div><div id="templateList" class="templates"><div class="empty">Loading templates…</div></div></section>
+<section class="panel" id="templateManager"><div class="listhead"><div><h2>Your Templates</h2><p class="muted">Edit, publish/unpublish or delete a template.</p></div><button id="refreshBtn" class="secondary">↻ Refresh</button></div><div id="templateList" class="templates"><div class="empty">Loading templates…</div></div></section>
 <div id="dashboardNotice" class="notice">Connecting to Firestore…</div>
 </main>
+</div>
+</div>
 <footer>HASAN VIDEO STUDIO · PaliaAPK HUB · Developer By ShanPalia · © 2026</footer>
 <script>
 const firebaseConfig={apiKey:"AIzaSyCn7GUkOaFO4l0x1zM5mwW4hFkW2ISxR10",authDomain:"shanpalia-apk-hub.firebaseapp.com",projectId:"shanpalia-apk-hub",storageBucket:"shanpalia-apk-hub.firebasestorage.app",messagingSenderId:"270953807883",appId:"1:270953807883:web:3dafa57f5cc4170e77870e",measurementId:"G-VW7W91CR9F"};
@@ -108,8 +135,8 @@ async function saveTemplate(ev){ev.preventDefault();const title=$("title").value
 async function togglePublish(t){try{await db.collection(COLLECTION).doc(t.id).update({published:!t.published,updatedAt:firebase.firestore.FieldValue.serverTimestamp(),updatedBy:auth.currentUser.email});await loadTemplates();}catch(e){alert("Could not update template: "+e.message);}}
 async function deleteTemplate(t){if(!confirm("Delete '"+t.title+"' permanently?"))return;try{await db.collection(COLLECTION).doc(t.id).delete();await loadTemplates();}catch(e){alert("Could not delete template: "+e.message);}}
 async function startDashboard(user){
- if(!user||user.email!==ADMIN_EMAIL){$("loginShell").classList.remove("hidden");$("dashboard").classList.add("hidden");$("loginNotice").textContent="This account is signed in but is not authorized as the HASAN Video Studio admin.";await auth.signOut();return;}
- $("loginShell").classList.add("hidden");$("dashboard").classList.remove("hidden");$("logoutBtn").classList.remove("hidden");$("adminIdentity").textContent=user.email;await loadTemplates();
+ if(!user||user.email!==ADMIN_EMAIL){$("loginShell").classList.remove("hidden");$("adminLayout").classList.add("hidden");$("dashboard").classList.add("hidden");$("loginNotice").textContent="This account is signed in but is not authorized as the HASAN Video Studio admin.";await auth.signOut();return;}
+ $("loginShell").classList.add("hidden");$("adminLayout").classList.remove("hidden");$("dashboard").classList.remove("hidden");$("logoutBtn").classList.remove("hidden");$("adminIdentity").textContent=user.email;await loadTemplates();
 }
 (async()=>{
  try{
@@ -141,7 +168,8 @@ async function startDashboard(user){
   $("videoDropZone").addEventListener("drop",e=>{const f=e.dataTransfer.files&&e.dataTransfer.files[0];if(f){const dt=new DataTransfer();dt.items.add(f);$("videoFile").files=dt.files;showSelectedVideo(f);}});
   $("loginBtn").disabled=false;$("loginNotice").textContent="Connected to ShanPalia APK Hub Firebase. Sign in with the approved admin email.";
   $("loginForm").addEventListener("submit",async ev=>{ev.preventDefault();$("loginBtn").disabled=true;setStatus("loginStatus","Signing in…",true);try{await auth.signInWithEmailAndPassword($("email").value.trim(),$("password").value);}catch(e){setStatus("loginStatus",e.message);}finally{$("loginBtn").disabled=false;}});
-  auth.onAuthStateChanged(user=>{if(user)startDashboard(user).catch(e=>setStatus("loginStatus",e.message));else{$("loginShell").classList.remove("hidden");$("dashboard").classList.add("hidden");$("logoutBtn").classList.add("hidden");}});
+  auth.onAuthStateChanged(user=>{if(user)startDashboard(user).catch(e=>setStatus("loginStatus",e.message));else{$("loginShell").classList.remove("hidden");$("adminLayout").classList.add("hidden");$("dashboard").classList.add("hidden");$("logoutBtn").classList.add("hidden");}});
+  document.querySelectorAll(".side-link[data-target]").forEach(btn=>btn.addEventListener("click",()=>{document.querySelectorAll(".side-link[data-target]").forEach(x=>x.classList.remove("active"));btn.classList.add("active");const target=$(btn.dataset.target);if(target)target.scrollIntoView({behavior:"smooth",block:"start"});}));
   $("logoutBtn").onclick=()=>auth.signOut();$("templateForm").addEventListener("submit",saveTemplate);$("resetBtn").onclick=resetForm;$("refreshBtn").onclick=loadTemplates;
  }catch(e){$("loginNotice").textContent=e.message;setStatus("loginStatus","Firebase initialization failed.");}
 })();
