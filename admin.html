@@ -15,7 +15,7 @@ button,a.btn{border:0;border-radius:11px;padding:11px 15px;font:inherit;font-siz
 footer{text-align:center;padding:20px;color:var(--muted);font-size:11px;border-top:1px solid var(--line)}
 .hidden{display:none!important}
 @media(max-width:680px){.top{height:auto;min-height:70px;padding:10px 0}.top-actions button{padding:9px;font-size:11px}.stats{grid-template-columns:1fr 1fr}.stat:last-child{grid-column:1/-1}.formgrid{grid-template-columns:1fr}.field.full{grid-column:auto}.welcome{align-items:flex-start;flex-direction:column}.item{grid-template-columns:60px 1fr}.thumb{width:60px;height:60px}.item-actions{grid-column:1/-1;justify-content:flex-start}.panel{padding:16px}}
-</style>
+\n.video-uploader{border:2px dashed #9bdcc8;border-radius:17px;background:linear-gradient(145deg,#f5fffa,#edfff7);min-height:220px;overflow:hidden;transition:.2s}.video-uploader.dragover{border-color:#087d63;background:#e4fff4;box-shadow:0 0 0 4px #13c99b20}.upload-empty{min-height:220px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:22px;text-align:center;cursor:pointer}.upload-icon{width:48px;height:48px;border-radius:15px;display:grid;place-items:center;background:#d9fff0;color:#087d63;font-size:22px}.upload-empty strong{font-size:15px}.upload-empty span,.upload-empty small{font-size:12px;color:var(--muted)}.upload-empty button{margin-top:5px}.video-preview-wrap{padding:12px}.video-preview-wrap video{display:block;width:100%;max-height:420px;aspect-ratio:16/9;object-fit:contain;background:#071d19;border-radius:12px}.preview-file{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 2px 0;font-size:12px;font-weight:700;overflow-wrap:anywhere}.preview-file button{flex-shrink:0}@media(max-width:600px){.video-uploader,.upload-empty{min-height:190px}.video-preview-wrap video{max-height:300px}.preview-file{align-items:flex-start;flex-direction:column}}\n</style>
 </head>
 <body>
 <header><div class="wrap top"><div class="brand"><img src="assets/hasan-logo.webp" alt="HASAN Video Studio"><div><strong>HASAN VIDEO STUDIO</strong><small>ADMIN CONTROL PANEL</small><em>👑 PaliaAPK HUB · Developer By ShanPalia</em></div></div><div class="top-actions"><a class="btn secondary" href="./index.html">← Website</a><button id="logoutBtn" class="secondary hidden">Sign Out</button></div></div></header>
@@ -28,7 +28,7 @@ footer{text-align:center;padding:20px;color:var(--muted);font-size:11px;border-t
 <div class="field"><label for="title">Template name *</label><input id="title" maxlength="70" required placeholder="e.g. Wedding Cinematic"></div>
 
 <div class="field full"><label for="description">Description</label><textarea id="description" maxlength="240" placeholder="Short template description"></textarea></div>
-<div class="field full"><label for="videoFile">Upload Template Video *</label><input id="videoFile" type="file" accept="video/mp4,video/webm,video/quicktime,video/*"><p class="muted" style="margin-top:7px">MP4 / WebM / MOV · Maximum 500 MB. Video will appear on the homepage after publishing.</p><video id="videoPreview" class="hidden" controls playsinline style="width:min(100%,360px);max-height:260px;border-radius:12px;background:#071d19;margin-top:10px"></video><div id="videoUploadStatus" class="muted" style="margin-top:7px"></div></div>
+<div class="field full"><label for="videoFile">Upload Template Video *</label><div class="video-uploader" id="videoDropZone"><input id="videoFile" type="file" accept="video/mp4,video/webm,video/quicktime,video/*" hidden><div class="upload-empty" id="uploadEmpty"><div class="upload-icon">▶</div><strong>Drop your video here</strong><span>or click to browse from your device</span><small>MP4 · WebM · MOV · Maximum 500 MB</small><button type="button" class="secondary" id="chooseVideoBtn">Choose Video</button></div><div class="video-preview-wrap hidden" id="videoPreviewWrap"><video id="videoPreview" controls playsinline preload="metadata"></video><div class="preview-file"><span id="previewFileName">Selected video</span><button type="button" class="secondary" id="changeVideoBtn">Change Video</button></div></div></div><p class="muted" style="margin-top:7px">Preview your video before saving. Upload will start when you click Save Template.</p><div id="videoUploadStatus" class="muted" style="margin-top:7px"></div></div>
 <div class="field"><label for="editorLink">Editor link</label><input id="editorLink" type="url" placeholder="https://shanpalia.github.io/Hasan-Video-Studio/editor.html"></div>
 <div class="field"><label for="badge">Label</label><select id="badge"><option value="">None</option><option>New</option><option>Popular</option><option>Trending</option></select></div>
 </div><label class="checkrow"><input id="published" type="checkbox"> Publish this template on homepage</label>
@@ -47,7 +47,7 @@ const loadScript=src=>new Promise((resolve,reject)=>{const s=document.createElem
 let auth,db,templates=[],selectedVideo=null;
 function setStatus(id,msg,ok=false){$(id).textContent=msg;$(id).style.color=ok?"#087d63":"#a12d2d";}
 function safeUrl(value){if(!value)return "";try{const u=new URL(value);return ["https:","http:"].includes(u.protocol)?u.href:"";}catch{return "";}}
-function resetForm(){ $("templateForm").reset();$("docId").value="";selectedVideo=null;$("videoPreview").pause();$("videoPreview").removeAttribute("src");$("videoPreview").classList.add("hidden");$("videoUploadStatus").textContent="";$("formTitle").textContent="＋ Add New Video Template";$("saveBtn").textContent="Save Template";setStatus("formStatus","");}
+function resetForm(){ $("templateForm").reset();$("docId").value="";selectedVideo=null;$("videoPreview").pause();$("videoPreview").removeAttribute("src");$("videoPreviewWrap").classList.add("hidden");$("uploadEmpty").classList.remove("hidden");$("videoFile").value="";if(previewObjectUrl){URL.revokeObjectURL(previewObjectUrl);previewObjectUrl="";} $("videoUploadStatus").textContent="";$("formTitle").textContent="＋ Add New Video Template";$("saveBtn").textContent="Save Template";setStatus("formStatus","");}
 function render(){
  $("totalCount").textContent=templates.length;
  $("publishedCount").textContent=templates.filter(t=>t.published===true).length;
@@ -65,7 +65,7 @@ function render(){
   actions.append(edit,toggle,del);row.append(img,info,actions);list.append(row);
  });
 }
-function editTemplate(t){$("docId").value=t.id;$("title").value=t.title||"";$("description").value=t.description||"";$("editorLink").value=t.editorLink||"";$("badge").value=t.badge||"";$("published").checked=t.published===true;selectedVideo=null;$("videoFile").value="";$("videoPreview").src=safeUrl(t.videoUrl)||"";$("videoPreview").classList.toggle("hidden",!t.videoUrl);$("videoUploadStatus").textContent=t.videoUrl?"Current video is saved. Choose another file to replace it.":"";$("formTitle").textContent="✎ Edit Video Template";$("saveBtn").textContent="Update Template";$("formPanel").scrollIntoView({behavior:"smooth"});}
+function editTemplate(t){$("docId").value=t.id;$("title").value=t.title||"";$("description").value=t.description||"";$("editorLink").value=t.editorLink||"";$("badge").value=t.badge||"";$("published").checked=t.published===true;selectedVideo=null;$("videoFile").value="";$("videoPreview").src=safeUrl(t.videoUrl)||"";$("videoPreviewWrap").classList.toggle("hidden",!t.videoUrl);$("uploadEmpty").classList.toggle("hidden",!!t.videoUrl);$("previewFileName").textContent=t.videoUrl?"Saved video preview":"Selected video";$("videoUploadStatus").textContent=t.videoUrl?"Current video is saved. Choose another file to replace it.":"";$("formTitle").textContent="✎ Edit Video Template";$("saveBtn").textContent="Update Template";$("formPanel").scrollIntoView({behavior:"smooth"});}
 async function loadTemplates(){setStatus("dashboardNotice","Loading templates…",true);try{const snap=await db.collection(COLLECTION).orderBy("updatedAt","desc").get();templates=snap.docs.map(d=>({id:d.id,...d.data()}));render();$("dashboardNotice").textContent="Firestore connected · "+COLLECTION; $("dashboardNotice").className="notice ok";}catch(e){$("dashboardNotice").className="notice";$("dashboardNotice").textContent="Could not load Firestore. "+e.message+" — Check that Firestore Database exists and firestore.rules from the GitHub repo have been published in Firebase Console." ;}}
 async function saveTemplate(ev){ev.preventDefault();const title=$("title").value.trim(),file=selectedVideo;if(!title){setStatus("formStatus","Template name is required.");return;}const id=$("docId").value;const old=templates.find(t=>t.id===id);if(!file&&!(old&&old.videoUrl)){setStatus("formStatus","Please select a video file first.");return;}if(file&&file.size>500*1024*1024){setStatus("formStatus","Video is larger than 500 MB. Please choose a smaller video.");return;}$("saveBtn").disabled=true;try{let videoUrl=old?.videoUrl||"",videoPath=old?.videoPath||"";if(file){
  const token=await auth.currentUser.getIdToken();
@@ -94,7 +94,27 @@ async function startDashboard(user){
   
   if(!firebase.apps.length)firebase.initializeApp(firebaseConfig);
   auth=firebase.auth();db=firebase.firestore();
-  $("videoFile").addEventListener("change",()=>{const f=$("videoFile").files[0];selectedVideo=f||null;if(f){$("videoPreview").src=URL.createObjectURL(f);$("videoPreview").classList.remove("hidden");$("videoUploadStatus").textContent=f.name+" · "+(f.size/1024/1024).toFixed(1)+" MB";}else if(!$("docId").value){$("videoPreview").classList.add("hidden");$("videoUploadStatus").textContent="";}});
+  let previewObjectUrl="";
+  function showSelectedVideo(file){
+   if(!file)return;
+   if(!file.type.startsWith("video/")){setStatus("videoUploadStatus","Please select a valid video file.");return;}
+   if(file.size>500*1024*1024){setStatus("videoUploadStatus","Video is larger than 500 MB.");return;}
+   selectedVideo=file;
+   if(previewObjectUrl)URL.revokeObjectURL(previewObjectUrl);
+   previewObjectUrl=URL.createObjectURL(file);
+   $("videoPreview").src=previewObjectUrl;
+   $("previewFileName").textContent=file.name+" · "+(file.size/1024/1024).toFixed(1)+" MB";
+   $("uploadEmpty").classList.add("hidden");
+   $("videoPreviewWrap").classList.remove("hidden");
+   $("videoUploadStatus").textContent="Preview ready · Video uploads when you click Save Template.";
+  }
+  $("videoDropZone").addEventListener("click",e=>{if(e.target.closest("button"))return;if(e.target.closest("video"))return;$("videoFile").click();});
+  $("chooseVideoBtn").onclick=()=>$("videoFile").click();
+  $("changeVideoBtn").onclick=()=>$("videoFile").click();
+  $("videoFile").addEventListener("change",()=>{const f=$("videoFile").files[0];if(f)showSelectedVideo(f);});
+  ["dragenter","dragover"].forEach(name=>$("videoDropZone").addEventListener(name,e=>{e.preventDefault();$("videoDropZone").classList.add("dragover");}));
+  ["dragleave","drop"].forEach(name=>$("videoDropZone").addEventListener(name,e=>{e.preventDefault();$("videoDropZone").classList.remove("dragover");}));
+  $("videoDropZone").addEventListener("drop",e=>{const f=e.dataTransfer.files&&e.dataTransfer.files[0];if(f){const dt=new DataTransfer();dt.items.add(f);$("videoFile").files=dt.files;showSelectedVideo(f);}});
   $("loginBtn").disabled=false;$("loginNotice").textContent="Connected to ShanPalia APK Hub Firebase. Sign in with the approved admin email.";
   $("loginForm").addEventListener("submit",async ev=>{ev.preventDefault();$("loginBtn").disabled=true;setStatus("loginStatus","Signing in…",true);try{await auth.signInWithEmailAndPassword($("email").value.trim(),$("password").value);}catch(e){setStatus("loginStatus",e.message);}finally{$("loginBtn").disabled=false;}});
   auth.onAuthStateChanged(user=>{if(user)startDashboard(user).catch(e=>setStatus("loginStatus",e.message));else{$("loginShell").classList.remove("hidden");$("dashboard").classList.add("hidden");$("logoutBtn").classList.add("hidden");}});
