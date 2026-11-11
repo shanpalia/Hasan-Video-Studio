@@ -122,6 +122,17 @@ body{background:radial-gradient(circle at 12% 0%,#e0fff1 0,transparent 28%),#f3f
 .editor-popover button{background:#effaf5;color:#087d63;border:1px solid #d2eee2}
 @media(max-width:850px){.layout{height:auto;min-height:0;grid-template-columns:58px minmax(0,1fr);grid-template-rows:minmax(390px,1fr) auto;padding:8px 8px 0}.tools{grid-column:1;grid-row:1 / 3;height:100%;border-radius:16px 0 0 16px}.stage{grid-column:2;grid-row:1;min-height:440px;border-radius:0 16px 0 0}.timeline{grid-column:2;grid-row:2;height:360px;min-height:360px;margin:0 0 8px;border-radius:0 0 16px 16px}.previewarea{min-height:350px}#preview{max-height:370px}.editor-popover{left:68px;top:78px}}
 @media(max-width:520px){.layout{grid-template-columns:52px minmax(0,1fr);grid-template-rows:minmax(360px,1fr) auto}.tools{grid-column:1;grid-row:1 / 3}.stage{grid-column:2;grid-row:1;min-height:380px}.timeline{grid-column:2;grid-row:2;height:390px;min-height:390px}.editor-popover{left:58px;width:calc(100vw - 72px)}}
+
+/* Keep the footer in its own full-width row, outside the editor workspace */
+@media(min-width:851px){
+ body{min-height:100vh;display:flex;flex-direction:column}
+ .top{flex:0 0 72px}
+ .layout{flex:1 0 auto;height:calc(100vh - 120px);min-height:560px}
+ .studio-footer{flex:0 0 48px;width:100%;min-height:48px;margin:0;padding:14px 18px;background:#fff;border-top:1px solid #dcefe6;box-shadow:0 -5px 18px #0a624208;position:relative;z-index:2}
+}
+@media(max-width:850px){
+ .studio-footer{display:block;clear:both;width:100%;margin:10px 0 0;padding:14px 10px;background:#fff;border-top:1px solid #dcefe6;border-radius:12px 12px 0 0;position:relative}
+}
 </style></head><body>
 <header class="top"><a href="index.html" class="brand" aria-label="HASAN Video Studio home"><img class="brand-logo" src="assets/hasan-logo.webp" alt="HASAN Video Studio"><span class="brand-copy"><strong>HASAN <span>VIDEO STUDIO</span></strong><small>BY PALIAAPK HUB</small></span></a><div id="projectName">New Project</div><div class="top-actions"><button onclick="location.href='index.html'">← Home</button><button class="primary" id="exportBtn">Export ↗</button></div></header>
 <div class="layout"><aside class="tools">
