@@ -41,7 +41,7 @@ const upload = multer({
   }),
   limits: { fileSize: 500 * 1024 * 1024 },
   fileFilter: (_req, file, cb) => {
-    if ((file.mimetype || "").startsWith("video/") || /\.(mp4|m4v|mov|webm|mkv|avi|3gp)$/i.test(file.originalname || "")) return cb(null, true);
+    if ((file.mimetype || "").startsWith("video/") || /\\.(mp4|m4v|mov|webm|mkv|avi|3gp)$/i.test(file.originalname || "")) return cb(null, true);
     cb(new Error("Please upload a video file."));
   }
 });
@@ -69,7 +69,19 @@ async function telegram() {
   return connecting;
 }
 async function telegramChannelEntity(tg) {
-  const wanted = CHANNEL_ID.replace(/^-100/, "").replace(/^-/, "");
+  const configured = CHANNEL_ID.trim();
+  const usernameMatch = configured.match(/^(?:https?:\\/\\/(?:www\\.)?t\\.me\\/)?@?([A-Za-z][A-Za-z0-9_]{4,})\\/?$/i);
+
+  // Public channels can be resolved directly from their @username or t.me/username link.
+  if (usernameMatch) {
+    const username = "@" + usernameMatch[1];
+    const entity = await tg.getEntity(username);
+    if (entity && entity.className === "Channel") return entity;
+    throw new Error("CHANNEL_ID username did not resolve to a Telegram channel. Check the public channel username.");
+  }
+
+  // Numeric private/public channel IDs are resolved from the logged-in account's dialogs.
+  const wanted = configured.replace(/^-100/, "").replace(/^-/, "");
   const dialogs = await tg.getDialogs({ limit: 1000 });
   const match = dialogs.find(d => d.isChannel && String(d.entity.id) === wanted);
   if (!match) throw new Error("CHANNEL_ID was not found in this Telegram account's channel dialogs. Make sure the logged-in account is a channel member/admin and CHANNEL_ID is correct.");
@@ -118,7 +130,7 @@ function transcodeToBrowserMp4(inputPath, outputPath) {
 async function requireFirebaseAdmin(req, res, next) {
   try {
     const header = req.get("authorization") || "";
-    const match = header.match(/^Bearer\s+(.+)$/i);
+    const match = header.match(/^Bearer\\s+(.+)$/i);
     if (!match) return res.status(401).json({ error: "Sign in required." });
     const decoded = await firebaseAuth.verifyIdToken(match[1]);
     if (decoded.email !== ADMIN_EMAIL) {
@@ -158,7 +170,7 @@ app.post("/api/upload", requireFirebaseAdmin, upload.single("video"), async (req
     res.json({
       ok: true,
       messageId: Number(msg.id),
-      fileName: req.file.originalname.replace(/\.[^.]+$/, "") + ".mp4",
+      fileName: req.file.originalname.replace(/\\.[^.]+$/, "") + ".mp4",
       originalFileName: req.file.originalname,
       size: convertedSize,
       originalSize: req.file.size,
