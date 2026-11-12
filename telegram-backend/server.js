@@ -70,19 +70,26 @@ async function telegram() {
 }
 async function telegramChannelEntity(tg) {
   const configured = CHANNEL_ID.trim();
-  const publicName = configured
-    .replace(/^https?:\\/\\/(?:www\\.)?t\\.me\\//i, "")
-    .replace(/^@/, "")
-    .replace(/\\/$/, "");
+  let publicName = configured;
 
-  // Public channels can be resolved directly from their @username or t.me/username link.
-  if (/^[A-Za-z][A-Za-z0-9_]{4,}$/.test(publicName)) {
+  // Accept @username, username, or a public t.me/username URL.
+  if (publicName.toLowerCase().startsWith("https://t.me/")) {
+    publicName = publicName.slice("https://t.me/".length);
+  } else if (publicName.toLowerCase().startsWith("http://t.me/")) {
+    publicName = publicName.slice("http://t.me/".length);
+  }
+  if (publicName.startsWith("@")) publicName = publicName.slice(1);
+  if (publicName.endsWith("/")) publicName = publicName.slice(0, -1);
+
+  // Public channels can be resolved directly from their username.
+  const isUsername = /^[A-Za-z][A-Za-z0-9_]{4,}$/.test(publicName);
+  if (isUsername) {
     const entity = await tg.getEntity("@" + publicName);
     if (entity && entity.className === "Channel") return entity;
     throw new Error("CHANNEL_ID username did not resolve to a Telegram channel. Check the public channel username.");
   }
 
-  // Numeric private/public channel IDs are resolved from the logged-in account's dialogs.
+  // Numeric channel IDs are resolved from the logged-in account's dialogs.
   const wanted = configured.replace(/^-100/, "").replace(/^-/, "");
   const dialogs = await tg.getDialogs({ limit: 1000 });
   const match = dialogs.find(d => d.isChannel && String(d.entity.id) === wanted);
