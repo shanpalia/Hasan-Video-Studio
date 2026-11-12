@@ -103,6 +103,7 @@ app.post("/api/upload", requireFirebaseAdmin, upload.single("video"), async (req
       file: req.file.path,
       caption: req.body.title || req.file.originalname,
       forceDocument: false,
+      supportsStreaming: true,
       workers: 1
     });
     const msg = Array.isArray(result) ? result[0] : result;
