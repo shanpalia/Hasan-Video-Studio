@@ -90,7 +90,7 @@ input,select,textarea{border-radius:12px;background:#fcfffd}
 <div class="field"><label for="badge">Label</label><select id="badge"><option value="">None</option><option>New</option><option>Popular</option><option>Trending</option></select></div>
 </div><label class="checkrow"><input id="published" type="checkbox" checked> Publish this template on homepage</label>
 <div class="formactions"><button class="primary" type="submit" id="saveBtn">Save Template</button><button class="secondary" type="button" id="resetBtn">Clear Form</button></div><div id="formStatus" class="status"></div></form></section>
-<div id="dashboardNotice" class="notice">Connecting to Firestore…</div>
+<div id="dashboardNotice" class="notice">Connecting to Firestore…</div><div id="verificationActions" class="hidden" style="margin-top:12px"><button type="button" id="resendVerificationBtn" class="primary">✉ Resend Verification Email</button><span id="verificationStatus" class="muted" style="display:block;margin-top:8px"></span></div>
 </main>
 </div>
 </div>
@@ -172,9 +172,11 @@ async function startDashboard(user){
  }
  if(!user.emailVerified){
    $("dashboardNotice").className="notice";
-   $("dashboardNotice").textContent="Admin email is not verified in Firebase Authentication. Verify shanpalia786@gmail.com, then sign out and sign in again.";
+   $("dashboardNotice").textContent="Admin email is not verified. Click below to send a verification link to "+ADMIN_EMAIL+". Open that email, click Verify Email, then sign out and sign in again.";
+   $("verificationActions").classList.remove("hidden");
    return;
  }
+ $("verificationActions").classList.add("hidden");
  await loadTemplates();
 }
 (async()=>{
@@ -223,6 +225,7 @@ document.querySelectorAll(".side-link[data-target]").forEach(btn=>btn.addEventLi
   const target=btn.dataset.target;
   showAdminView(target==="formPanel"?"add":target==="templateManager"?"manage":"dashboard");
 }));
+  $("resendVerificationBtn").onclick=async()=>{const btn=$("resendVerificationBtn"),status=$("verificationStatus");btn.disabled=true;status.textContent="Sending verification email…";try{if(!auth.currentUser)throw new Error("Please sign in again first.");await auth.currentUser.sendEmailVerification();status.textContent="✓ Verification email sent to "+ADMIN_EMAIL+". Check Inbox, Spam and Promotions. After verifying, sign out and sign in again.";status.style.color="#087d63";}catch(e){status.textContent="Could not send email: "+e.message;status.style.color="#a12d2d";}finally{btn.disabled=false;}};
   $("logoutBtn").onclick=()=>auth.signOut();$("generateDescriptionBtn").onclick=generateAiDescription;$("templateForm").addEventListener("submit",saveTemplate);$("resetBtn").onclick=resetForm;$("refreshBtn").onclick=loadTemplates;
  }catch(e){$("loginNotice").textContent=e.message;setStatus("loginStatus","Firebase initialization failed.");}
 })();
