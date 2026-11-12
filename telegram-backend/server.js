@@ -139,10 +139,10 @@ function transcodeToBrowserMp4(inputPath, outputPath) {
 async function requireFirebaseAdmin(req, res, next) {
   try {
     const header = req.get("authorization") || "";
-    const match = header.match(/^Bearer\\s+(.+)$/i);
+    const match = header.match(/^Bearer\s+(.+)$/i);
     if (!match) return res.status(401).json({ error: "Sign in required." });
     const decoded = await firebaseAuth.verifyIdToken(match[1]);
-    if (decoded.email !== ADMIN_EMAIL) {
+    if ((decoded.email || "").toLowerCase() !== ADMIN_EMAIL.toLowerCase()) {
       return res.status(403).json({ error: "Wrong Firebase account. Sign in with " + ADMIN_EMAIL + " to upload templates." });
     }
     req.adminUser = decoded;
