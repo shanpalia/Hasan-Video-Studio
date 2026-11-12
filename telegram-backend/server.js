@@ -70,12 +70,14 @@ async function telegram() {
 }
 async function telegramChannelEntity(tg) {
   const configured = CHANNEL_ID.trim();
-  const usernameMatch = configured.match(/^(?:https?:\\/\\/(?:www\\.)?t\\.me\\/)?@?([A-Za-z][A-Za-z0-9_]{4,})\\/?$/i);
+  const publicName = configured
+    .replace(/^https?:\\/\\/(?:www\\.)?t\\.me\\//i, "")
+    .replace(/^@/, "")
+    .replace(/\\/$/, "");
 
   // Public channels can be resolved directly from their @username or t.me/username link.
-  if (usernameMatch) {
-    const username = "@" + usernameMatch[1];
-    const entity = await tg.getEntity(username);
+  if (/^[A-Za-z][A-Za-z0-9_]{4,}$/.test(publicName)) {
+    const entity = await tg.getEntity("@" + publicName);
     if (entity && entity.className === "Channel") return entity;
     throw new Error("CHANNEL_ID username did not resolve to a Telegram channel. Check the public channel username.");
   }
