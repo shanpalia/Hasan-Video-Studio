@@ -237,9 +237,28 @@ async function analyzeVideoWithGemini(filePath, originalName) {
     }
     const prompt = "Analyze these sampled keyframes from a user-uploaded short-form video template. Original filename: " + originalName + ". Return ONLY valid JSON with keys title (catchy template name, max 6 words), description (accurate public card description under 220 characters), scenes (array of objects with start, end, kind, replaceable, reason). Use only visible evidence. Scenes should cover likely distinct visual shots using the supplied timestamps; mark replaceable=true only when a shot appears to be a portrait/photo placeholder or a full-frame personal-media shot that a user could reasonably replace. Do not assume every cut is replaceable. If uncertain, mark false. Estimate start/end seconds; keep ordered, non-overlapping. Include confidence 0 to 1 for each scene.";
     const body = { contents: [{ parts: [{ text: prompt }, ...imageParts] }], generationConfig: { temperature: 0.2, responseMimeType: "application/json" } };
-    const response = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=" + encodeURIComponent(apiKey), { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body), signal: AbortSignal.timeout(80000) });
-    const result = await response.json().catch(() => ({}));
-    if (!response.ok) throw new Error(result.error?.message || "Gemini analysis failed (" + response.status + ").");
+    // Try the primary model first, then automatically fall back to the lighter stable model during capacity spikes.
+    const models = ["gemini-3.8-flash", "gemini-3.5-flash-lite"];
+    let result = {}, response = null, lastError = "";
+    for (let i = 0; i < models.length; i++) {
+      try {
+        response = await fetch("https://generativelanguage.googleapis.com/v1beta/models/" + models[i] + ":generateContent?key=" + encodeURIComponent(apiKey), {
+          method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body), signal: AbortSignal.timeout(65000)
+        });
+        result = await response.json().catch(() => ({}));
+        if (response.ok) break;
+        lastError = result.error?.message || "Gemini analysis failed (" + response.status + ").";
+        const retryable = response.status === 429 || response.status === 500 || response.status === 502 || response.status === 503 || /high demand|overloaded|temporar|capacity|unavailable/i.test(lastError);
+        if (!retryable || i === models.length - 1) throw new Error(lastError);
+        console.warn("Gemini model " + models[i] + " busy; switching to " + models[i + 1] + ".");
+      } catch (err) {
+        lastError = err.message || String(err);
+        const retryable = /high demand|overloaded|temporar|capacity|unavailable|fetch failed|timeout|aborted/i.test(lastError);
+        if (!retryable || i === models.length - 1) throw err;
+        console.warn("Gemini model " + models[i] + " unavailable; switching to " + models[i + 1] + ".");
+      }
+    }
+    if (!response || !response.ok) throw new Error(lastError || "Gemini analysis failed. Please retry.");
     const raw = result.candidates?.[0]?.content?.parts?.map(p => p.text || "").join("") || "";
     let parsed;
     try { parsed = JSON.parse(raw.replace(/^```json\s*|\s*```$/g, "")); }
