@@ -117,7 +117,7 @@ input,select,textarea{border-radius:12px;background:#fcfffd}
 <section class="panel" id="templateManager"><div class="listhead"><div><h2>Your Templates</h2><p class="muted">Edit, publish/unpublish or delete a template.</p></div><button id="refreshBtn" class="secondary">↻ Refresh</button></div><div id="templateList" class="templates"><div class="empty">Loading templates…</div></div></section>
 <section class="panel" id="formPanel"><h2 id="formTitle">＋ Add New Template</h2><p class="muted">Complete the details, then publish directly to the homepage.</p>
 <form id="templateForm"><input id="docId" type="hidden"><div class="editor-layout"><div class="editor-fields"><div class="formgrid">
-<div class="field"><label for="title">Template name *</label><input id="title" maxlength="70" required placeholder="e.g. Wedding Cinematic"></div>
+<div class="field"><div class="description-head"><label for="title">Template name *</label><button type="button" class="secondary ai-description-btn" id="generateTitleBtn">✦ AI Name</button></div><input id="title" maxlength="70" required placeholder="AI se template name banwayein"><small id="titleAiStatus" class="muted" style="display:block;margin-top:7px;font-size:11px">Video select karne ke baad AI se title banwayein.</small></div>
 
 <div class="field full"><div class="description-head"><label for="description">Description</label><button type="button" class="secondary ai-description-btn" id="generateDescriptionBtn">✦ Generate with AI</button></div><textarea id="description" maxlength="240" placeholder="AI se description banwane ke liye template name likhein"></textarea><small id="descriptionAiStatus" class="muted">AI will create a short description from the template name and video filename.</small></div>
 <div class="field full"><label for="videoFile">Upload Template Video *</label><div class="video-uploader" id="videoDropZone"><input id="videoFile" type="file" accept="video/mp4,video/webm,video/quicktime,video/*" hidden><div class="upload-empty" id="uploadEmpty"><div class="upload-icon">▶</div><strong>Drop your video here</strong><span>or click to browse from your device</span><small>MP4 · WebM · MOV · Maximum 500 MB</small><button type="button" class="secondary" id="chooseVideoBtn">Choose Video</button></div><div class="video-preview-wrap hidden" id="videoPreviewWrap"><video id="videoPreview" controls playsinline preload="metadata"></video><div class="preview-file"><span id="previewFileName">Selected video</span><button type="button" class="secondary" id="changeVideoBtn">Change Video</button></div></div></div><p class="muted" style="margin-top:7px">Preview your video before saving. Upload starts when you click Publish Template.</p><div id="videoUploadStatus" class="muted" style="margin-top:7px"></div><div id="uploadProgress" class="hidden" style="margin-top:12px;padding:13px;border:1px solid #cfeee0;border-radius:13px;background:#f5fff9"><div style="display:flex;justify-content:space-between;gap:10px;font-size:12px;font-weight:800"><span id="uploadProgressLabel">Uploading video…</span><span id="uploadProgressPercent">0%</span></div><div style="height:9px;background:#dcefe6;border-radius:99px;overflow:hidden;margin:9px 0"><div id="uploadProgressBar" style="height:100%;width:0%;background:linear-gradient(90deg,#087b61,#13c99b);border-radius:99px;transition:width .15s"></div></div><div id="uploadProgressDetails" style="font-size:11px;color:#617a72">0 MB uploaded · 0 MB remaining</div></div></div>
@@ -161,6 +161,29 @@ function render(){
 function editTemplate(t){showAdminView("add");$("docId").value=t.id;$("title").value=t.title||"";$("description").value=t.description||"";$("badge").value=t.badge||"";$("sceneCount").value=Math.max(1,Math.min(12,(t.scenes||[]).length||4));$("sceneDuration").value=(t.scenes&&t.scenes[0]&&t.scenes[0].duration)||3;renderSceneBuilder();selectedVideo=null;$("videoFile").value="";$("videoPreview").src=safeUrl(t.videoUrl)||"";const savedPhoneUrl=safeUrl(t.videoUrl);if(savedPhoneUrl){setPhonePreviewSource(savedPhoneUrl,"Saved template video preview");}else{$("phoneVideoPreview").pause();$("phoneVideoPreview").removeAttribute("src");$("phoneVideoPreview").load();$("phoneVideoPlaceholder").classList.remove("hidden");}$("phoneTitle").textContent=t.title||"Your Template Name";$("phoneDescription").textContent=t.description||"Your template description will appear here.";const phoneBadge=t.badge||"NEW";$("phoneBadge").textContent=phoneBadge.toUpperCase();$("phoneBadge").style.display=phoneBadge?"inline-block":"none";$("videoPreviewWrap").classList.toggle("hidden",!t.videoUrl);$("uploadEmpty").classList.toggle("hidden",!!t.videoUrl);$("previewFileName").textContent=t.videoUrl?"Saved video preview":"Selected video";$("videoUploadStatus").textContent=t.videoUrl?"Current video is saved. Choose another file to replace it.":"";$("formTitle").textContent="✎ Edit Video Template";$("saveBtn").textContent="Publish Changes";$("formPanel").scrollIntoView({behavior:"smooth"});}
 async function loadTemplates(){setStatus("dashboardNotice","Loading templates…",true);try{const snap=await db.collection(COLLECTION).get();templates=snap.docs.map(d=>({id:d.id,...d.data()}));const timeOf=t=>{const v=t.createdAt||t.updatedAt;try{return v&&typeof v.toMillis==="function"?v.toMillis():(v?new Date(v).getTime():0);}catch{return 0;}};templates.sort((a,b)=>timeOf(b)-timeOf(a));render();$("dashboardNotice").textContent="Firestore connected · "+COLLECTION; $("dashboardNotice").className="notice ok";}catch(e){$("dashboardNotice").className="notice";$("dashboardNotice").textContent="Firestore permission denied. Open Firebase Console → Firestore Database → Rules, paste the exact rules from this repository file firestore.rules and click Publish. Then sign out and sign in again. Details: "+e.message; $("dashboardNotice").insertAdjacentHTML("beforeend", " <a href=\"https://console.firebase.google.com/project/shanpalia-apk-hub/firestore/rules\" target=\"_blank\" rel=\"noopener\" style=\"font-weight:800;text-decoration:underline\">Open Firestore Rules</a>");}}
 
+
+async function callPaliaAi(prompt,system,maxTokens=80){
+ const response=await fetch(PALIA_AI_API,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"gpt-5.6",messages:[{role:"system",content:system},{role:"user",content:prompt}],temperature:0.7,max_tokens:maxTokens})});
+ const result=await response.json().catch(()=>({}));
+ if(!response.ok)throw new Error(result.error?.message||result.error||("AI request failed ("+response.status+")"));
+ let answer=result.choices?.[0]?.message?.content||result.message?.content||result.response||result.output||"";
+ if(Array.isArray(answer))answer=answer.map(x=>x.text||"").join("");
+ answer=String(answer).trim();
+ if(!answer)throw new Error("AI returned an empty response.");
+ return answer.replace(/^["']|["']$/g,"");
+}
+async function generateAiTitle(){
+ const file=selectedVideo||$("videoFile").files?.[0]||null,existing=$("title").value.trim(),status=$("titleAiStatus"),btn=$("generateTitleBtn");
+ if(!file&&!existing){status.textContent="Pehle video select karein.";status.style.color="#a12d2d";return;}
+ btn.disabled=true;btn.textContent="✦ Generating…";status.textContent="Palia AI title bana raha hai…";status.style.color="#648078";
+ try{
+  const prompt="Create one catchy, professional name for a short-form video editing template. "+(file?"Video filename: "+file.name+". ":"")+(existing?"Current title/context: "+existing+". ":"")+"Use only available context; do not pretend to have watched the video. Maximum 6 words. Return only the name, no quotes, emoji, hashtags or explanation.";
+  const answer=await callPaliaAi(prompt,"You name video editing templates. Return one concise title only.",50);
+  $("title").value=answer.slice(0,70);$("title").dispatchEvent(new Event("input"));
+  status.textContent="✓ AI title ready. Publish se pehle edit kar sakte hain.";status.style.color="#087d63";
+ }catch(e){status.textContent="AI title failed: "+e.message;status.style.color="#a12d2d";}
+ finally{btn.disabled=false;btn.textContent="✦ AI Name";}
+}
 async function generateAiDescription(){
  const title=$("title").value.trim();
  if(!title){setStatus("descriptionAiStatus","Pehle template ka naam likhein.");$("title").focus();return;}
@@ -168,13 +191,7 @@ async function generateAiDescription(){
  btn.disabled=true;btn.textContent="✦ Generating…";status.textContent="Palia AI se description ban rahi hai…";status.style.color="#648078";
  try{
   const prompt="Write one engaging, accurate description for a video editing template named: "+title+". "+(file?"Uploaded video filename: "+file.name+". ":"")+"Use the title and filename only; do not claim visual details that are not known. Keep it under 220 characters, natural English, suitable for a public template card. Return only the description, no quotes, heading or hashtags.";
-  const response=await fetch(PALIA_AI_API,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"gpt-5.6",messages:[{role:"system",content:"You write concise, appealing descriptions for video editing templates. Never invent visual details."},{role:"user",content:prompt}],temperature:0.7,max_tokens:100})});
-  const result=await response.json().catch(()=>({}));
-  if(!response.ok)throw new Error(result.error?.message||result.error||("AI request failed ("+response.status+")"));
-  let answer=result.choices?.[0]?.message?.content||result.message?.content||result.response||result.output||"";
-  if(Array.isArray(answer))answer=answer.map(x=>x.text||"").join("");
-  answer=String(answer).trim().replace(/^["'\s]+|["'\s]+$/g,"");
-  if(!answer)throw new Error("AI returned an empty description.");
+  const answer=await callPaliaAi(prompt,"You write concise, appealing descriptions for video editing templates. Never invent visual details.",100);
   $("description").value=answer.slice(0,240);status.textContent="✓ AI description ready. You can edit it before saving.";status.style.color="#087d63";
  }catch(e){status.textContent="AI description failed: "+e.message;status.style.color="#a12d2d";}
  finally{btn.disabled=false;btn.textContent="✦ Generate with AI";}
@@ -339,7 +356,8 @@ document.querySelectorAll(".side-link[data-target]").forEach(btn=>btn.addEventLi
   showAdminView(target==="formPanel"?"add":"dashboard");
 }));
   $("resendVerificationBtn").onclick=async()=>{const btn=$("resendVerificationBtn"),status=$("verificationStatus");btn.disabled=true;status.textContent="Sending verification email…";try{if(!auth.currentUser)throw new Error("Please sign in again first.");await auth.currentUser.sendEmailVerification();status.textContent="✓ Verification email sent to "+ADMIN_EMAIL+". Check Inbox, Spam and Promotions. After verifying, sign out and sign in again.";status.style.color="#087d63";}catch(e){status.textContent="Could not send email: "+e.message;status.style.color="#a12d2d";}finally{btn.disabled=false;}};
-  $("logoutBtn").onclick=()=>auth.signOut();$("generateDescriptionBtn").onclick=generateAiDescription;$("templateForm").addEventListener("submit",saveTemplate);$("resetBtn").onclick=resetForm;$("refreshBtn").onclick=loadTemplates;
+  $("logoutBtn").onclick=()=>auth.signOut();$("generateDescriptionBtn").onclick=generateAiDescription;$("generateTitleBtn").addEventListener("click",generateAiTitle);
+$("templateForm").addEventListener("submit",saveTemplate);$("resetBtn").onclick=resetForm;$("refreshBtn").onclick=loadTemplates;
  }catch(e){$("loginNotice").textContent=e.message;setStatus("loginStatus","Firebase initialization failed.");}
 })();
 </script>
