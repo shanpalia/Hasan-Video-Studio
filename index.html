@@ -63,7 +63,7 @@ function renderPublishedTemplates(items){
  items.sort((a,b)=>(b.updatedAt?.seconds||0)-(a.updatedAt?.seconds||0));
  items.forEach(t=>{
   const card=document.createElement("article");card.className="template";
-  const link=validHttpUrl(t.editorLink)||"./editor.html";
+  const link="./editor.html";
   const thumb=document.createElement("div");thumb.className="thumb";
   const videoUrl=validHttpUrl(t.videoUrl);
   if(videoUrl){const video=document.createElement("video");video.src=videoUrl;video.muted=true;video.loop=true;video.autoplay=true;video.playsInline=true;video.preload="metadata";video.setAttribute("aria-label",t.title||"Video template");thumb.append(video);}
