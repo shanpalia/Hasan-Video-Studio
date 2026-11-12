@@ -38,7 +38,7 @@ function timeline(){
  $('fillTemplate').onclick=()=>{activeSlot='fillTemplate';$('mediaFiles').click();};
  $('addMedia').onclick=()=>{activeSlot=null;$('mediaFiles').click();};
  $('replaceClip').onclick=()=>{if(selectedIndex<0)return alert('Pehle timeline scene select karein');activeSlot='replace';$('mediaFiles').click();};
- $('addAudio').onclick=()=>$('audioFile').click();$('replaceMusic')?.addEventListener('click',()=>$('audioFile').click());
+ $('addAudio').onclick=()=>$('audioFile').click();$('replaceMusic').onclick=()=>$('audioFile').click();
  $('addText').onclick=()=>{$('overlayText').focus();$('propTitle').textContent='Text settings';};
  $('filters').onclick=()=>{$('filter').focus();$('propTitle').textContent='Filter settings';};
  $('transitions').onclick=()=>{$('transition').focus();$('propTitle').textContent='Transition settings';};
