@@ -39,7 +39,7 @@ const upload = multer({
   }),
   limits: { fileSize: 500 * 1024 * 1024 },
   fileFilter: (_req, file, cb) => {
-    if ((file.mimetype || "").startsWith("video/")) return cb(null, true);
+    if ((file.mimetype || "").startsWith("video/") || /\.(mp4|m4v|mov|webm|mkv|avi|3gp)$/i.test(file.originalname || "")) return cb(null, true);
     cb(new Error("Please upload a video file."));
   }
 });
