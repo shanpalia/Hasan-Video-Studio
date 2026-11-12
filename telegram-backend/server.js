@@ -5,6 +5,8 @@ const multer = require("multer");
 const fs = require("fs");
 const os = require("os");
 const path = require("path");
+const { spawn } = require("child_process");
+const ffmpegPath = require("ffmpeg-static");
 const admin = require("firebase-admin");
 const { TelegramClient } = require("telegram");
 const { StringSession } = require("telegram/sessions");
@@ -73,6 +75,46 @@ async function telegramChannelEntity(tg) {
   if (!match) throw new Error("CHANNEL_ID was not found in this Telegram account's channel dialogs. Make sure the logged-in account is a channel member/admin and CHANNEL_ID is correct.");
   return match.entity;
 }
+
+function transcodeToBrowserMp4(inputPath, outputPath) {
+  return new Promise((resolve, reject) => {
+    if (!ffmpegPath) return reject(new Error("FFmpeg binary is unavailable on this server."));
+    const args = [
+      "-y", "-hide_banner", "-loglevel", "error",
+      "-i", inputPath,
+      "-map", "0:v:0", "-map", "0:a?",
+      "-c:v", "libx264", "-preset", "ultrafast", "-crf", "23",
+      "-pix_fmt", "yuv420p",
+      "-c:a", "aac", "-b:a", "128k",
+      "-movflags", "+faststart", "-f", "mp4",
+      outputPath
+    ];
+    const proc = spawn(ffmpegPath, args, { stdio: ["ignore", "ignore", "pipe"] });
+    let errorText = "";
+    let settled = false;
+    const timer = setTimeout(() => {
+      if (!settled) {
+        proc.kill("SIGKILL");
+        settled = true;
+        reject(new Error("Video conversion timed out. Try a shorter or smaller video."));
+      }
+    }, 30 * 60 * 1000);
+    proc.stderr.on("data", chunk => {
+      if (errorText.length < 12000) errorText += chunk.toString();
+    });
+    proc.on("error", err => {
+      if (settled) return;
+      settled = true; clearTimeout(timer); reject(err);
+    });
+    proc.on("close", code => {
+      if (settled) return;
+      settled = true; clearTimeout(timer);
+      if (code === 0 && fs.existsSync(outputPath)) resolve(outputPath);
+      else reject(new Error("Video conversion failed. Make sure the file contains a video track. " + errorText.slice(-1800)));
+    });
+  });
+}
+
 async function requireFirebaseAdmin(req, res, next) {
   try {
     const header = req.get("authorization") || "";
@@ -96,11 +138,17 @@ app.get("/health", (_req, res) => {
 });
 app.post("/api/upload", requireFirebaseAdmin, upload.single("video"), async (req, res) => {
   if (!req.file) return res.status(400).json({ error: "Select a video file." });
+  let convertedPath;
   try {
+    convertedPath = path.join(uploadDir, `converted-${Date.now()}-${require("crypto").randomUUID()}.mp4`);
+    console.log("Converting uploaded video to H.264/AAC MP4:", req.file.originalname);
+    await transcodeToBrowserMp4(req.file.path, convertedPath);
+    const convertedSize = (await fs.promises.stat(convertedPath)).size;
+
     const tg = await telegram();
     const channel = await telegramChannelEntity(tg);
     const result = await tg.sendFile(channel, {
-      file: req.file.path,
+      file: convertedPath,
       caption: req.body.title || req.file.originalname,
       forceDocument: false,
       supportsStreaming: true,
@@ -110,16 +158,24 @@ app.post("/api/upload", requireFirebaseAdmin, upload.single("video"), async (req
     res.json({
       ok: true,
       messageId: Number(msg.id),
-      fileName: req.file.originalname,
-      size: req.file.size,
-      mimeType: req.file.mimetype,
+      fileName: req.file.originalname.replace(/\.[^.]+$/, "") + ".mp4",
+      originalFileName: req.file.originalname,
+      size: convertedSize,
+      originalSize: req.file.size,
+      mimeType: "video/mp4",
+      converted: true,
+      videoCodec: "H.264",
+      audioCodec: "AAC",
       videoUrl: `https://${req.get("host")}/api/video/${Number(msg.id)}`
     });
   } catch (e) {
-    console.error("Telegram upload failed:", e);
-    res.status(e.status || 500).json({ error: e.message || "Telegram upload failed" });
+    console.error("Telegram upload/conversion failed:", e);
+    const message = e.message || "Video upload failed";
+    const isConversionError = message.includes("Video conversion") || message.includes("FFmpeg") || message.includes("timed out");
+    res.status(e.status || (isConversionError ? 422 : 500)).json({ error: message });
   } finally {
     fs.promises.unlink(req.file.path).catch(() => {});
+    if (convertedPath) fs.promises.unlink(convertedPath).catch(() => {});
   }
 });
 app.get("/api/video/:messageId", async (req, res) => {
