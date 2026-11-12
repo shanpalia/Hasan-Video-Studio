@@ -146,7 +146,11 @@ async function generateAiDescription(){
  finally{btn.disabled=false;btn.textContent="✦ Generate with AI";}
 }
 async function saveTemplate(ev){ev.preventDefault();const title=$("title").value.trim(),file=selectedVideo;if(!title){setStatus("formStatus","Template name is required.");return;}const id=$("docId").value;const old=templates.find(t=>t.id===id);if(!file&&!(old&&old.videoUrl)){setStatus("formStatus","Please select a video file first.");return;}if(file&&file.size>500*1024*1024){setStatus("formStatus","Video is larger than 500 MB. Please choose a smaller video.");return;}$("saveBtn").disabled=true;try{let videoUrl=old?.videoUrl||"",videoPath=old?.videoPath||"";if(file){
- const token=await auth.currentUser.getIdToken();
+ const currentUser=auth.currentUser;
+ if(!currentUser)throw new Error("Firebase session expired. Sign out and sign in again with "+ADMIN_EMAIL+".");
+ if((currentUser.email||"").toLowerCase()!==ADMIN_EMAIL.toLowerCase())throw new Error("Wrong account. Please sign in with "+ADMIN_EMAIL+".");
+ const token=await currentUser.getIdToken(true);
+ if(!token)throw new Error("Firebase could not create an ID token. Sign out and sign in again.");
  const form=new FormData();
  form.append("video",file,file.name);
  form.append("title",title);
@@ -178,7 +182,7 @@ async function saveTemplate(ev){ev.preventDefault();const title=$("title").value
  preview.onerror=()=>{
    $("videoUploadStatus").textContent="Video was uploaded, but preview could not load. Check the Render video API.";
  };
-}const data={title,description:$("description").value.trim(),videoUrl,videoPath,badge:$("badge").value,published:$("published").checked,updatedAt:firebase.firestore.FieldValue.serverTimestamp(),updatedBy:auth.currentUser.email};if(id){await db.collection(COLLECTION).doc(id).update(data);}else{data.createdAt=firebase.firestore.FieldValue.serverTimestamp();await db.collection(COLLECTION).add(data);}resetForm();await loadTemplates();setStatus("formStatus","Video template saved successfully.",true);}catch(e){setStatus("formStatus","Save failed: "+e.message+" — Admin upload ke liye verified "+ADMIN_EMAIL+" account se sign in karein.");}finally{$("saveBtn").disabled=false;}}
+}const data={title,description:$("description").value.trim(),videoUrl,videoPath,badge:$("badge").value,published:$("published").checked,updatedAt:firebase.firestore.FieldValue.serverTimestamp(),updatedBy:auth.currentUser.email};if(id){await db.collection(COLLECTION).doc(id).update(data);}else{data.createdAt=firebase.firestore.FieldValue.serverTimestamp();await db.collection(COLLECTION).add(data);}resetForm();await loadTemplates();setStatus("formStatus","Video template saved successfully.",true);}catch(e){console.error("Template save failed:",e);setStatus("formStatus","Save failed: "+e.message);}finally{$("saveBtn").disabled=false;}}
 async function togglePublish(t){try{await db.collection(COLLECTION).doc(t.id).update({published:!t.published,updatedAt:firebase.firestore.FieldValue.serverTimestamp(),updatedBy:auth.currentUser.email});await loadTemplates();}catch(e){alert("Could not update template: "+e.message);}}
 async function deleteTemplate(t){if(!confirm("Delete '"+t.title+"' permanently?"))return;try{await db.collection(COLLECTION).doc(t.id).delete();await loadTemplates();}catch(e){alert("Could not delete template: "+e.message);}}
 async function startDashboard(user){
