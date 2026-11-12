@@ -74,7 +74,7 @@ function renderPublishedTemplates(items){
   const tag=document.createElement("span");tag.className="tag";tag.textContent=t.badge||"Use Template";
   meta.append(name,tag);card.append(thumb,meta);
   card.tabIndex=0;card.setAttribute("role","link");card.setAttribute("aria-label","Open "+(t.title||"template"));
-  const open=()=>{const url=new URL(link,location.href);if(url.pathname.endsWith("editor.html")){url.searchParams.set("template",t.title||"");if(t.videoUrl)url.searchParams.set("video",t.videoUrl);}location.href=url.href;};
+  const open=()=>{const url=new URL(link,location.href);if(url.pathname.endsWith("editor.html")){url.searchParams.set("template",t.title||"");if(t.id)url.searchParams.set("templateId",t.id);if(t.videoUrl)url.searchParams.set("video",t.videoUrl);}location.href=url.href;};
   card.addEventListener("click",open);card.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();open();}});
   gallery.append(card);
  });
@@ -82,7 +82,7 @@ function renderPublishedTemplates(items){
 try{
  if(!firebase.apps.length)firebase.initializeApp(firebaseConfig);
  firebase.firestore().collection("hasan_templates").where("published","==",true).get()
- .then(snapshot=>renderPublishedTemplates(snapshot.docs.map(d=>d.data())))
+ .then(snapshot=>renderPublishedTemplates(snapshot.docs.map(d=>({id:d.id,...d.data()}))))
  .catch(error=>{console.error("Template gallery:",error);showGalleryMessage("Templates are temporarily unavailable. Please try again later.");});
 }catch(error){console.error(error);showGalleryMessage("Templates are temporarily unavailable. Please try again later.");}
 </script>
