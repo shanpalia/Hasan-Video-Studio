@@ -170,12 +170,6 @@ async function startDashboard(user){
    $("dashboardNotice").textContent="Firebase login token refresh failed: "+tokenError.message;
    return;
  }
- if(!user.emailVerified){
-   $("dashboardNotice").className="notice";
-   $("dashboardNotice").textContent="Admin email is not verified. Click below to send a verification link to "+ADMIN_EMAIL+". Open that email, click Verify Email, then sign out and sign in again.";
-   $("verificationActions").classList.remove("hidden");
-   return;
- }
  $("verificationActions").classList.add("hidden");
  await loadTemplates();
 }
