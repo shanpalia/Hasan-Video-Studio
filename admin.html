@@ -125,7 +125,7 @@ function render(){
  });
 }
 function editTemplate(t){$("docId").value=t.id;$("title").value=t.title||"";$("description").value=t.description||"";$("badge").value=t.badge||"";$("published").checked=t.published===true;selectedVideo=null;$("videoFile").value="";$("videoPreview").src=safeUrl(t.videoUrl)||"";$("videoPreviewWrap").classList.toggle("hidden",!t.videoUrl);$("uploadEmpty").classList.toggle("hidden",!!t.videoUrl);$("previewFileName").textContent=t.videoUrl?"Saved video preview":"Selected video";$("videoUploadStatus").textContent=t.videoUrl?"Current video is saved. Choose another file to replace it.":"";$("formTitle").textContent="✎ Edit Video Template";$("saveBtn").textContent="Update Template";$("formPanel").scrollIntoView({behavior:"smooth"});}
-async function loadTemplates(){setStatus("dashboardNotice","Loading templates…",true);try{const snap=await db.collection(COLLECTION).get();templates=snap.docs.map(d=>({id:d.id,...d.data()}));const timeOf=t=>{const v=t.createdAt||t.updatedAt;try{return v&&typeof v.toMillis==="function"?v.toMillis():(v?new Date(v).getTime():0);}catch{return 0;}};templates.sort((a,b)=>timeOf(b)-timeOf(a));render();$("dashboardNotice").textContent="Firestore connected · "+COLLECTION; $("dashboardNotice").className="notice ok";}catch(e){$("dashboardNotice").className="notice";$("dashboardNotice").textContent="Could not load Firestore. "+e.message+" — Check that Firestore Database exists and firestore.rules from the GitHub repo have been published in Firebase Console." ;}}
+async function loadTemplates(){setStatus("dashboardNotice","Loading templates…",true);try{const snap=await db.collection(COLLECTION).get();templates=snap.docs.map(d=>({id:d.id,...d.data()}));const timeOf=t=>{const v=t.createdAt||t.updatedAt;try{return v&&typeof v.toMillis==="function"?v.toMillis():(v?new Date(v).getTime():0);}catch{return 0;}};templates.sort((a,b)=>timeOf(b)-timeOf(a));render();$("dashboardNotice").textContent="Firestore connected · "+COLLECTION; $("dashboardNotice").className="notice ok";}catch(e){$("dashboardNotice").className="notice";$("dashboardNotice").textContent="Firestore permission denied. Open Firebase Console → Firestore Database → Rules, paste the exact rules from this repository file firestore.rules and click Publish. Then sign out and sign in again. Details: "+e.message; $("dashboardNotice").insertAdjacentHTML("beforeend", " <a href=\"https://console.firebase.google.com/project/shanpalia-apk-hub/firestore/rules\" target=\"_blank\" rel=\"noopener\" style=\"font-weight:800;text-decoration:underline\">Open Firestore Rules</a>");}}
 
 async function generateAiDescription(){
  const title=$("title").value.trim();
@@ -181,26 +181,30 @@ async function startDashboard(user){
   
   if(!firebase.apps.length)firebase.initializeApp(firebaseConfig);
   auth=firebase.auth();db=firebase.firestore();
+  function isVideoFile(file){return !!file&&((file.type||"").toLowerCase().startsWith("video/")||/\.(mp4|m4v|mov|webm|mkv|avi|3gp)$/i.test(file.name||""));}
   function showSelectedVideo(file){
    if(!file)return;
-   if(!file.type.startsWith("video/")){setStatus("videoUploadStatus","Please select a valid video file.");return;}
+   if(!isVideoFile(file)){setStatus("videoUploadStatus","Video file select karein (MP4, MOV, WebM, MKV, AVI).");return;}
    if(file.size>500*1024*1024){setStatus("videoUploadStatus","Video is larger than 500 MB.");return;}
    selectedVideo=file;
    if(previewObjectUrl)URL.revokeObjectURL(previewObjectUrl);
    previewObjectUrl=URL.createObjectURL(file);
-   $("videoPreview").src=previewObjectUrl;
+   const player=$("videoPreview");player.pause();player.removeAttribute("src");player.load();player.src=previewObjectUrl;player.load();
    $("previewFileName").textContent=file.name+" · "+(file.size/1024/1024).toFixed(1)+" MB";
-   $("uploadEmpty").classList.add("hidden");
-   $("videoPreviewWrap").classList.remove("hidden");
-   $("videoUploadStatus").textContent="Preview ready · Video uploads when you click Save Template.";
+   $("uploadEmpty").classList.add("hidden");$("videoPreviewWrap").classList.remove("hidden");
+   $("videoUploadStatus").textContent="Video selected. Loading preview…";
   }
-  $("videoDropZone").addEventListener("click",e=>{if(e.target.closest("button"))return;if(e.target.closest("video"))return;$("videoFile").click();});
-  $("chooseVideoBtn").onclick=()=>$("videoFile").click();
-  $("changeVideoBtn").onclick=()=>$("videoFile").click();
+  $("videoPreview").onloadedmetadata=()=>{const v=$("videoPreview");if(v.videoWidth>0&&v.videoHeight>0){$("videoUploadStatus").textContent="✓ Video preview ready · "+v.videoWidth+" × "+v.videoHeight+". Click Save Template to upload.";}else{$("videoUploadStatus").textContent="Audio track detected but no video picture. This file may be audio-only or use an unsupported video codec.";}};
+  $("videoPreview").onerror=()=>{$("videoUploadStatus").textContent="Browser cannot decode this video preview. Try MP4 (H.264 video + AAC audio).";};
+  $("videoDropZone").addEventListener("click",e=>{if(e.target.closest("button")||e.target.closest("video"))return;$("videoFile").click();});
+  $("chooseVideoBtn").onclick=()=>$("videoFile").click();$("changeVideoBtn").onclick=()=>$("videoFile").click();
   $("videoFile").addEventListener("change",()=>{const f=$("videoFile").files[0];if(f)showSelectedVideo(f);});
-  ["dragenter","dragover"].forEach(name=>$("videoDropZone").addEventListener(name,e=>{e.preventDefault();$("videoDropZone").classList.add("dragover");}));
-  ["dragleave","drop"].forEach(name=>$("videoDropZone").addEventListener(name,e=>{e.preventDefault();$("videoDropZone").classList.remove("dragover");}));
-  $("videoDropZone").addEventListener("drop",e=>{const f=e.dataTransfer.files&&e.dataTransfer.files[0];if(f){const dt=new DataTransfer();dt.items.add(f);$("videoFile").files=dt.files;showSelectedVideo(f);}});
+  const dropZone=$("videoDropZone");
+  ["dragenter","dragover"].forEach(name=>dropZone.addEventListener(name,e=>{e.preventDefault();e.stopPropagation();dropZone.classList.add("dragover");}));
+  ["dragleave","drop"].forEach(name=>dropZone.addEventListener(name,e=>{e.preventDefault();e.stopPropagation();dropZone.classList.remove("dragover");}));
+  dropZone.addEventListener("drop",e=>{const files=Array.from(e.dataTransfer?.files||[]);const f=files.find(isVideoFile);if(f)showSelectedVideo(f);else setStatus("videoUploadStatus","Drop an MP4, MOV or WebM video file here.");});
+  document.addEventListener("dragover",e=>{if(e.dataTransfer?.types?.includes("Files"))e.preventDefault();});
+  document.addEventListener("drop",e=>{if(e.dataTransfer?.files?.length)e.preventDefault();});
   $("loginBtn").disabled=false;$("loginNotice").textContent="Connected to ShanPalia APK Hub Firebase. Sign in with the approved admin email.";
   $("loginForm").addEventListener("submit",async ev=>{ev.preventDefault();$("loginBtn").disabled=true;setStatus("loginStatus","Signing in…",true);try{await auth.signInWithEmailAndPassword($("email").value.trim(),$("password").value);}catch(e){setStatus("loginStatus",e.message);}finally{$("loginBtn").disabled=false;}});
   auth.onAuthStateChanged(user=>{if(user)startDashboard(user).catch(e=>setStatus("loginStatus",e.message));else{$("loginShell").classList.remove("hidden");$("adminLayout").classList.add("hidden");$("dashboard").classList.add("hidden");$("logoutBtn").classList.add("hidden");}});
