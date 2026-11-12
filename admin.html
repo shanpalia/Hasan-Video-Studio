@@ -180,15 +180,15 @@ async function analyzeUploadedVideo(){
  btn.disabled=true;btn.textContent="✦ Analyzing video…";status.style.color="#648078";
  const waitTitle=$("videoAiWaitTitle"),remaining=$("videoAiRemaining");
  waitTitle.style.display="block";waitTitle.textContent="PLEASE WAIT…";
- const estimateSeconds=Math.max(45,Math.min(240,45+Math.ceil(file.size/1048576)*0.6));
+ const estimateSeconds=Math.max(25,Math.min(65,25+Math.ceil(file.size/1048576)*0.15));
  let secondsLeft=Math.ceil(estimateSeconds);
- const showRemaining=()=>{remaining.textContent=secondsLeft>0?"Estimated remaining: about "+Math.floor(secondsLeft/60)+"m "+(secondsLeft%60)+"s":"Finishing up…";};
+ const showRemaining=()=>{remaining.textContent=secondsLeft>0?"Estimated remaining: about "+Math.floor(secondsLeft/60)+"m "+(secondsLeft%60)+"s":"Analysis taking longer than expected…";;};
  showRemaining();
  const waitTimer=setInterval(()=>{secondsLeft--;showRemaining();},1000);
  try{
   const form=new FormData();form.append("video",file,file.name);
   const token=await user.getIdToken(true);
-  const response=await fetch(TELEGRAM_API+"/api/analyze-template",{method:"POST",headers:{Authorization:"Bearer "+token},body:form});
+  const response=await fetch(TELEGRAM_API+"/api/analyze-template",{method:"POST",headers:{Authorization:"Bearer "+token},body:form,signal:AbortSignal.timeout(90000)});
   const data=await response.json().catch(()=>({}));
   if(!response.ok||!data.ok)throw new Error(data.error||("Analysis failed ("+response.status+")"));
   if(data.title){$("title").value=data.title;$("title").dispatchEvent(new Event("input"));}
