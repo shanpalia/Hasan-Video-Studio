@@ -67,8 +67,11 @@ async function requireFirebaseAdmin(req, res, next) {
     const match = header.match(/^Bearer\s+(.+)$/i);
     if (!match) return res.status(401).json({ error: "Sign in required." });
     const decoded = await firebaseAuth.verifyIdToken(match[1]);
-    if (decoded.email !== ADMIN_EMAIL || decoded.email_verified !== true) {
-      return res.status(403).json({ error: "This Firebase account is not authorized." });
+    if (decoded.email !== ADMIN_EMAIL) {
+      return res.status(403).json({ error: "Wrong Firebase account. Sign in with " + ADMIN_EMAIL + " to upload templates." });
+    }
+    if (decoded.email_verified !== true) {
+      return res.status(403).json({ error: "The admin email " + ADMIN_EMAIL + " is not verified. Verify it in Firebase Authentication, then sign in again." });
     }
     req.adminUser = decoded;
     next();
