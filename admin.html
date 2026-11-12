@@ -231,7 +231,14 @@ async function saveTemplate(ev){
   $("uploadProgressLabel").textContent="Published successfully";$("uploadProgressPercent").textContent="100%";
   $("uploadProgressBar").style.width="100%";$("uploadProgressDetails").textContent="Template is now published on the homepage.";
   await loadTemplates();
-  resetForm();showAdminView("dashboard");
+  resetForm();
+  // saveTemplate is outside the Firebase setup IIFE, so switch views directly here.
+  $("overview").classList.remove("hidden");
+  document.querySelector(".stats").classList.remove("hidden");
+  $("templateManager").classList.remove("hidden");
+  $("formPanel").classList.add("hidden");
+  document.querySelectorAll(".side-link[data-target]").forEach(btn=>btn.classList.toggle("active",btn.dataset.target==="overview"));
+  window.scrollTo({top:0,behavior:"smooth"});
   setStatus("dashboardNotice","✓ Template published successfully and is now live on the homepage.",true);
  }catch(e){console.error("Template publish failed:",e);setStatus("formStatus","Publish failed: "+e.message);$("uploadProgressLabel").textContent="Publish failed";$("uploadProgressDetails").textContent=e.message;}
  finally{$("saveBtn").disabled=false;}
