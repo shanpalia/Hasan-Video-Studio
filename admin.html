@@ -122,7 +122,7 @@ function render(){
   actions.append(edit,toggle,del);row.append(img,info,actions);list.append(row);
  });
 }
-function editTemplate(t){showAdminView("add");$("docId").value=t.id;$("title").value=t.title||"";$("description").value=t.description||"";$("badge").value=t.badge||"";$("published").checked=t.published===true;selectedVideo=null;$("videoFile").value="";$("videoPreview").src=safeUrl(t.videoUrl)||"";$("videoPreviewWrap").classList.toggle("hidden",!t.videoUrl);$("uploadEmpty").classList.toggle("hidden",!!t.videoUrl);$("previewFileName").textContent=t.videoUrl?"Saved video preview":"Selected video";$("videoUploadStatus").textContent=t.videoUrl?"Current video is saved. Choose another file to replace it.":"";$("formTitle").textContent="✎ Edit Video Template";$("saveBtn").textContent="Publish Changes";$("formPanel").scrollIntoView({behavior:"smooth"});}
+function editTemplate(t){showAdminView("add");$("docId").value=t.id;$("title").value=t.title||"";$("description").value=t.description||"";$("badge").value=t.badge||"";selectedVideo=null;$("videoFile").value="";$("videoPreview").src=safeUrl(t.videoUrl)||"";$("videoPreviewWrap").classList.toggle("hidden",!t.videoUrl);$("uploadEmpty").classList.toggle("hidden",!!t.videoUrl);$("previewFileName").textContent=t.videoUrl?"Saved video preview":"Selected video";$("videoUploadStatus").textContent=t.videoUrl?"Current video is saved. Choose another file to replace it.":"";$("formTitle").textContent="✎ Edit Video Template";$("saveBtn").textContent="Publish Changes";$("formPanel").scrollIntoView({behavior:"smooth"});}
 async function loadTemplates(){setStatus("dashboardNotice","Loading templates…",true);try{const snap=await db.collection(COLLECTION).get();templates=snap.docs.map(d=>({id:d.id,...d.data()}));const timeOf=t=>{const v=t.createdAt||t.updatedAt;try{return v&&typeof v.toMillis==="function"?v.toMillis():(v?new Date(v).getTime():0);}catch{return 0;}};templates.sort((a,b)=>timeOf(b)-timeOf(a));render();$("dashboardNotice").textContent="Firestore connected · "+COLLECTION; $("dashboardNotice").className="notice ok";}catch(e){$("dashboardNotice").className="notice";$("dashboardNotice").textContent="Firestore permission denied. Open Firebase Console → Firestore Database → Rules, paste the exact rules from this repository file firestore.rules and click Publish. Then sign out and sign in again. Details: "+e.message; $("dashboardNotice").insertAdjacentHTML("beforeend", " <a href=\"https://console.firebase.google.com/project/shanpalia-apk-hub/firestore/rules\" target=\"_blank\" rel=\"noopener\" style=\"font-weight:800;text-decoration:underline\">Open Firestore Rules</a>");}}
 
 async function generateAiDescription(){
@@ -256,7 +256,7 @@ async function startDashboard(user){
   stats.classList.toggle("hidden",view!=="dashboard");
   form.classList.toggle("hidden",view!=="add");
   manager.classList.toggle("hidden",view!=="manage"&&view!=="dashboard");
-  if(view==="add"){resetForm();$("formTitle").textContent="＋ Add New Template";$("saveBtn").textContent="Save Template";}
+  if(view==="add"){resetForm();$("formTitle").textContent="＋ Add New Template";$("saveBtn").textContent="Publish Template";}
   window.scrollTo({top:0,behavior:"smooth"});
 }
 document.querySelectorAll(".side-link[data-target]").forEach(btn=>btn.addEventListener("click",()=>{
