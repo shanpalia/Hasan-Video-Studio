@@ -61,6 +61,38 @@ input,select,textarea{border-radius:12px;background:#fcfffd}
 .ai-description-btn{border:1px solid #a8dfc9!important;background:linear-gradient(110deg,#eafff4,#d9f8e9)!important;color:#087d63!important;font-weight:800!important;border-radius:10px!important;padding:8px 12px!important;white-space:nowrap}
 .ai-description-btn:disabled{opacity:.6;cursor:wait}
 #descriptionAiStatus{display:block;margin-top:7px;font-size:11px}
+
+/* Two-column template editor with a live mobile homepage preview */
+.editor-layout{display:grid;grid-template-columns:minmax(0,1.12fr) minmax(280px,.88fr);gap:26px;align-items:start;margin-top:18px}
+.editor-fields{min-width:0}.editor-fields .formgrid{grid-template-columns:1fr}.editor-fields .field.full{grid-column:auto}
+.live-preview-column{position:sticky;top:96px;display:flex;flex-direction:column;align-items:center;min-width:0;padding:16px 10px 12px;border:1px solid #dcefe6;border-radius:20px;background:linear-gradient(160deg,#f3fff9,#fff 55%,#eafff5)}
+.live-preview-heading{width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:15px;padding:0 5px}
+.live-preview-heading b,.live-preview-heading small{display:block}.live-preview-heading b{font-size:13px}.live-preview-heading small{font-size:10px;color:#71877e;margin-top:3px}
+.live-dot{font-size:9px;font-weight:900;letter-spacing:1px;color:#087d63;background:#dffbed;border-radius:99px;padding:5px 9px}
+.phone-shell{width:min(100%,300px);padding:9px;border-radius:34px;background:#101d19;box-shadow:0 18px 45px #062e222e;border:1px solid #33443d}
+.phone-notch{width:74px;height:15px;margin:0 auto 7px;border-radius:0 0 12px 12px;background:#101d19;position:relative;z-index:2}
+.phone-screen{overflow:hidden;border-radius:25px;background:#fff;min-height:480px;display:flex;flex-direction:column}
+.phone-brand{height:43px;display:flex;align-items:center;gap:7px;padding:0 11px;border-bottom:1px solid #edf3ef;font-size:9px;font-weight:900;letter-spacing:.35px;color:#123b30}
+.phone-brand-icon{width:22px;height:22px;border-radius:7px;background:linear-gradient(135deg,#087b61,#13c99b);display:grid;place-items:center;color:#fff;font-size:12px}
+.phone-menu{margin-left:auto;font-size:18px}
+.phone-video-stage{position:relative;width:100%;aspect-ratio:9/12;background:linear-gradient(145deg,#12382d,#071d19);overflow:hidden;display:grid;place-items:center}
+.phone-video-stage video{width:100%;height:100%;object-fit:cover;display:block;background:#071d19}
+.phone-video-placeholder{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:#fff;background:linear-gradient(145deg,#164b3b,#071d19);text-align:center;padding:20px}
+.phone-video-placeholder span{width:46px;height:46px;border:1px solid #ffffff80;border-radius:50%;display:grid;place-items:center;font-size:19px}
+.phone-video-placeholder b{font-size:12px}.phone-video-placeholder small{font-size:9px;color:#d1e8dd}
+.phone-play-toggle{position:absolute;right:10px;bottom:10px;width:35px;height:35px;border:1px solid #ffffff88;border-radius:50%;background:#071d19b8;color:#fff;padding:0;font-size:14px}
+.phone-card-content{padding:13px 12px 12px;color:#122e25}
+.phone-template-badge{display:inline-block;padding:4px 7px;border-radius:99px;background:#e5fff2;color:#087d63;font-size:8px;font-weight:900;letter-spacing:.5px}
+.phone-template-badge:empty{display:none}
+.phone-card-content h3{font-size:14px;line-height:1.25;margin:8px 0 5px;overflow-wrap:anywhere}
+.phone-card-content p{font-size:9px;line-height:1.5;color:#6b8077;margin:0;min-height:28px;overflow-wrap:anywhere}
+.phone-meta{display:flex;justify-content:space-between;font-size:8px;color:#779087;margin:12px 0}
+.phone-use-button{width:100%;padding:9px!important;border-radius:9px!important;background:#0b9c76;color:#fff;font-size:9px!important}
+.phone-bottom-nav{margin-top:auto;border-top:1px solid #edf3ef;display:flex;justify-content:space-around;padding:9px 4px 7px;color:#4d6b5e;font-size:13px}
+.phone-bottom-nav span{text-align:center}.phone-bottom-nav small{display:block;font-size:7px;margin-top:2px}
+.phone-preview-note{max-width:300px;text-align:center;font-size:10px;line-height:1.5;color:#70877d;margin:12px 4px 0}
+@media(max-width:900px){.editor-layout{grid-template-columns:1fr}.live-preview-column{position:relative;top:auto;grid-row:1}.phone-shell{width:min(100%,270px)}.editor-fields{grid-row:2}}
+@media(max-width:600px){.editor-layout{gap:16px}.live-preview-column{padding:13px 8px}.phone-shell{width:min(100%,250px)}}
 </style>
 </head>
 <body>
@@ -81,13 +113,13 @@ input,select,textarea{border-radius:12px;background:#fcfffd}
 <div class="stats"><div class="stat"><small>Total templates</small><b id="totalCount">0</b></div><div class="stat"><small>Published</small><b id="publishedCount">0</b></div><div class="stat"><small>Drafts</small><b id="draftCount">0</b></div></div>
 <section class="panel" id="templateManager"><div class="listhead"><div><h2>Your Templates</h2><p class="muted">Edit, publish/unpublish or delete a template.</p></div><button id="refreshBtn" class="secondary">↻ Refresh</button></div><div id="templateList" class="templates"><div class="empty">Loading templates…</div></div></section>
 <section class="panel" id="formPanel"><h2 id="formTitle">＋ Add New Template</h2><p class="muted">Complete the details, then publish directly to the homepage.</p>
-<form id="templateForm"><input id="docId" type="hidden"><div class="formgrid">
+<form id="templateForm"><input id="docId" type="hidden"><div class="editor-layout"><div class="editor-fields"><div class="formgrid">
 <div class="field"><label for="title">Template name *</label><input id="title" maxlength="70" required placeholder="e.g. Wedding Cinematic"></div>
 
 <div class="field full"><div class="description-head"><label for="description">Description</label><button type="button" class="secondary ai-description-btn" id="generateDescriptionBtn">✦ Generate with AI</button></div><textarea id="description" maxlength="240" placeholder="AI se description banwane ke liye template name likhein"></textarea><small id="descriptionAiStatus" class="muted">AI will create a short description from the template name and video filename.</small></div>
 <div class="field full"><label for="videoFile">Upload Template Video *</label><div class="video-uploader" id="videoDropZone"><input id="videoFile" type="file" accept="video/mp4,video/webm,video/quicktime,video/*" hidden><div class="upload-empty" id="uploadEmpty"><div class="upload-icon">▶</div><strong>Drop your video here</strong><span>or click to browse from your device</span><small>MP4 · WebM · MOV · Maximum 500 MB</small><button type="button" class="secondary" id="chooseVideoBtn">Choose Video</button></div><div class="video-preview-wrap hidden" id="videoPreviewWrap"><video id="videoPreview" controls playsinline preload="metadata"></video><div class="preview-file"><span id="previewFileName">Selected video</span><button type="button" class="secondary" id="changeVideoBtn">Change Video</button></div></div></div><p class="muted" style="margin-top:7px">Preview your video before saving. Upload starts when you click Publish Template.</p><div id="videoUploadStatus" class="muted" style="margin-top:7px"></div><div id="uploadProgress" class="hidden" style="margin-top:12px;padding:13px;border:1px solid #cfeee0;border-radius:13px;background:#f5fff9"><div style="display:flex;justify-content:space-between;gap:10px;font-size:12px;font-weight:800"><span id="uploadProgressLabel">Uploading video…</span><span id="uploadProgressPercent">0%</span></div><div style="height:9px;background:#dcefe6;border-radius:99px;overflow:hidden;margin:9px 0"><div id="uploadProgressBar" style="height:100%;width:0%;background:linear-gradient(90deg,#087b61,#13c99b);border-radius:99px;transition:width .15s"></div></div><div id="uploadProgressDetails" style="font-size:11px;color:#617a72">0 MB uploaded · 0 MB remaining</div></div></div>
 <div class="field"><label for="badge">Label</label><select id="badge"><option value="">None</option><option>New</option><option>Popular</option><option>Trending</option></select></div>
-</div><div class="formactions"><button class="primary" type="submit" id="saveBtn">Publish Template</button><button class="secondary" type="button" id="resetBtn">Clear Form</button></div><div id="formStatus" class="status"></div></form></section>
+</div></div><aside class="live-preview-column"><div class="live-preview-heading"><div><b>Live Homepage Preview</b><small>Changes appear here instantly</small></div><span class="live-dot">LIVE</span></div><div class="phone-shell"><div class="phone-notch"></div><div class="phone-screen"><div class="phone-brand"><span class="phone-brand-icon">H</span><span>HASAN VIDEO STUDIO</span><span class="phone-menu">⋮</span></div><div class="phone-video-stage" id="phoneVideoStage"><video id="phoneVideoPreview" playsinline preload="metadata"></video><div class="phone-video-placeholder" id="phoneVideoPlaceholder"><span>▶</span><b>Video preview</b><small>Select a video to preview it here</small></div><button type="button" class="phone-play-toggle" id="phonePlayToggle" aria-label="Play video">▶</button></div><div class="phone-card-content"><span class="phone-template-badge" id="phoneBadge">NEW</span><h3 id="phoneTitle">Your Template Name</h3><p id="phoneDescription">Your template description will appear here. Add details on the left to preview.</p><div class="phone-meta"><span>▶ Video Template</span><span>♡ Save</span></div><button type="button" class="phone-use-button">Use Template</button></div><div class="phone-bottom-nav"><span>⌂<small>Home</small></span><span>▦<small>Explore</small></span><span>♡<small>Saved</small></span><span>☻<small>Profile</small></span></div></div></div><p class="phone-preview-note">This is a live visual preview. The final template appears on your homepage after publishing.</p></aside></div><div class="formactions"><button class="primary" type="submit" id="saveBtn">Publish Template</button><button class="secondary" type="button" id="resetBtn">Clear Form</button></div><div id="formStatus" class="status"></div></form></section>
 <div id="dashboardNotice" class="notice">Connecting to Firestore…</div><div id="verificationActions" class="hidden" style="margin-top:12px"><button type="button" id="resendVerificationBtn" class="primary">✉ Resend Verification Email</button><span id="verificationStatus" class="muted" style="display:block;margin-top:8px"></span></div>
 </main>
 </div>
@@ -104,7 +136,7 @@ const loadScript=src=>new Promise((resolve,reject)=>{const s=document.createElem
 let auth,db,templates=[],selectedVideo=null,previewObjectUrl="";
 function setStatus(id,msg,ok=false){$(id).textContent=msg;$(id).style.color=ok?"#087d63":"#a12d2d";}
 function safeUrl(value){if(!value)return "";try{const u=new URL(value);return ["https:","http:"].includes(u.protocol)?u.href:"";}catch{return "";}}
-function resetForm(){ $("templateForm").reset();$("docId").value="";selectedVideo=null;$("videoPreview").pause();$("videoPreview").removeAttribute("src");$("videoPreviewWrap").classList.add("hidden");$("uploadEmpty").classList.remove("hidden");$("videoFile").value="";if(previewObjectUrl){URL.revokeObjectURL(previewObjectUrl);previewObjectUrl="";} $("videoUploadStatus").textContent="";$("formTitle").textContent="＋ Add New Video Template";$("saveBtn").textContent="Publish Template";setStatus("formStatus","");}
+function resetForm(){ $("templateForm").reset();$("docId").value="";selectedVideo=null;$("phoneVideoPreview").pause();$("phoneVideoPreview").removeAttribute("src");$("phoneVideoPreview").load();$("phoneVideoPlaceholder").classList.remove("hidden");$("phonePlayToggle").textContent="▶";$("phoneTitle").textContent="Your Template Name";$("phoneDescription").textContent="Your template description will appear here. Add details on the left to preview.";$("phoneBadge").textContent="NEW";$("videoPreview").pause();$("videoPreview").removeAttribute("src");$("videoPreviewWrap").classList.add("hidden");$("uploadEmpty").classList.remove("hidden");$("videoFile").value="";if(previewObjectUrl){URL.revokeObjectURL(previewObjectUrl);previewObjectUrl="";} $("videoUploadStatus").textContent="";$("formTitle").textContent="＋ Add New Video Template";$("saveBtn").textContent="Publish Template";setStatus("formStatus","");}
 function render(){
  $("totalCount").textContent=templates.length;
  $("publishedCount").textContent=templates.filter(t=>t.published===true).length;
@@ -122,7 +154,7 @@ function render(){
   actions.append(edit,toggle,del);row.append(img,info,actions);list.append(row);
  });
 }
-function editTemplate(t){showAdminView("add");$("docId").value=t.id;$("title").value=t.title||"";$("description").value=t.description||"";$("badge").value=t.badge||"";selectedVideo=null;$("videoFile").value="";$("videoPreview").src=safeUrl(t.videoUrl)||"";$("videoPreviewWrap").classList.toggle("hidden",!t.videoUrl);$("uploadEmpty").classList.toggle("hidden",!!t.videoUrl);$("previewFileName").textContent=t.videoUrl?"Saved video preview":"Selected video";$("videoUploadStatus").textContent=t.videoUrl?"Current video is saved. Choose another file to replace it.":"";$("formTitle").textContent="✎ Edit Video Template";$("saveBtn").textContent="Publish Changes";$("formPanel").scrollIntoView({behavior:"smooth"});}
+function editTemplate(t){showAdminView("add");$("docId").value=t.id;$("title").value=t.title||"";$("description").value=t.description||"";$("badge").value=t.badge||"";selectedVideo=null;$("videoFile").value="";$("videoPreview").src=safeUrl(t.videoUrl)||"";$("phoneVideoPreview").src=safeUrl(t.videoUrl)||"";$("phoneVideoPlaceholder").classList.toggle("hidden",!!t.videoUrl);$("phoneTitle").textContent=t.title||"Your Template Name";$("phoneDescription").textContent=t.description||"Your template description will appear here.";const phoneBadge=t.badge||"NEW";$("phoneBadge").textContent=phoneBadge.toUpperCase();$("phoneBadge").style.display=phoneBadge?"inline-block":"none";$("videoPreviewWrap").classList.toggle("hidden",!t.videoUrl);$("uploadEmpty").classList.toggle("hidden",!!t.videoUrl);$("previewFileName").textContent=t.videoUrl?"Saved video preview":"Selected video";$("videoUploadStatus").textContent=t.videoUrl?"Current video is saved. Choose another file to replace it.":"";$("formTitle").textContent="✎ Edit Video Template";$("saveBtn").textContent="Publish Changes";$("formPanel").scrollIntoView({behavior:"smooth"});}
 async function loadTemplates(){setStatus("dashboardNotice","Loading templates…",true);try{const snap=await db.collection(COLLECTION).get();templates=snap.docs.map(d=>({id:d.id,...d.data()}));const timeOf=t=>{const v=t.createdAt||t.updatedAt;try{return v&&typeof v.toMillis==="function"?v.toMillis():(v?new Date(v).getTime():0);}catch{return 0;}};templates.sort((a,b)=>timeOf(b)-timeOf(a));render();$("dashboardNotice").textContent="Firestore connected · "+COLLECTION; $("dashboardNotice").className="notice ok";}catch(e){$("dashboardNotice").className="notice";$("dashboardNotice").textContent="Firestore permission denied. Open Firebase Console → Firestore Database → Rules, paste the exact rules from this repository file firestore.rules and click Publish. Then sign out and sign in again. Details: "+e.message; $("dashboardNotice").insertAdjacentHTML("beforeend", " <a href=\"https://console.firebase.google.com/project/shanpalia-apk-hub/firestore/rules\" target=\"_blank\" rel=\"noopener\" style=\"font-weight:800;text-decoration:underline\">Open Firestore Rules</a>");}}
 
 async function generateAiDescription(){
@@ -231,13 +263,18 @@ async function startDashboard(user){
    selectedVideo=file;
    if(previewObjectUrl)URL.revokeObjectURL(previewObjectUrl);
    previewObjectUrl=URL.createObjectURL(file);
-   const player=$("videoPreview");player.pause();player.removeAttribute("src");player.load();player.src=previewObjectUrl;player.load();
+   const player=$("videoPreview");player.pause();player.removeAttribute("src");player.load();player.src=previewObjectUrl;player.load();const phonePlayer=$("phoneVideoPreview");phonePlayer.pause();phonePlayer.src=previewObjectUrl;phonePlayer.load();$("phoneVideoPlaceholder").classList.add("hidden");
    $("previewFileName").textContent=file.name+" · "+(file.size/1024/1024).toFixed(1)+" MB";
    $("uploadEmpty").classList.add("hidden");$("videoPreviewWrap").classList.remove("hidden");
    $("videoUploadStatus").textContent="Video selected. Loading preview…";$("uploadProgress").classList.add("hidden");
   }
   $("videoPreview").onloadedmetadata=()=>{const v=$("videoPreview");if(v.videoWidth>0&&v.videoHeight>0){$("videoUploadStatus").textContent="✓ Video preview ready · "+v.videoWidth+" × "+v.videoHeight+". Click Save Template to upload.";}else{$("videoUploadStatus").textContent="Audio track detected but no video picture. This file may be audio-only or use an unsupported video codec.";}};
   $("videoPreview").onerror=()=>{$("videoUploadStatus").textContent="Browser cannot decode this video preview. Try MP4 (H.264 video + AAC audio).";};
+  $("title").addEventListener("input",()=>{$("phoneTitle").textContent=$("title").value.trim()||"Your Template Name";});
+  $("description").addEventListener("input",()=>{$("phoneDescription").textContent=$("description").value.trim()||"Your template description will appear here.";});
+  $("badge").addEventListener("change",()=>{const value=$("badge").value||"NEW";$("phoneBadge").textContent=value.toUpperCase();$("phoneBadge").style.display="inline-block";});
+  $("phonePlayToggle").onclick=async()=>{const v=$("phoneVideoPreview");if(!v.src)return;if(v.paused){try{await v.play();$("phonePlayToggle").textContent="Ⅱ";}catch(e){$("videoUploadStatus").textContent="Video playback could not start: "+e.message;}}else{v.pause();$("phonePlayToggle").textContent="▶";}};
+  $("phoneVideoPreview").addEventListener("play",()=>{$("phonePlayToggle").textContent="Ⅱ";});$("phoneVideoPreview").addEventListener("pause",()=>{$("phonePlayToggle").textContent="▶";});$("phoneVideoPreview").addEventListener("ended",()=>{$("phonePlayToggle").textContent="▶";});
   $("videoDropZone").addEventListener("click",e=>{if(e.target.closest("button")||e.target.closest("video"))return;$("videoFile").click();});
   $("chooseVideoBtn").onclick=()=>$("videoFile").click();$("changeVideoBtn").onclick=()=>$("videoFile").click();
   $("videoFile").addEventListener("change",()=>{const f=$("videoFile").files[0];if(f)showSelectedVideo(f);});
