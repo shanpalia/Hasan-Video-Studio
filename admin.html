@@ -156,7 +156,28 @@ async function saveTemplate(ev){ev.preventDefault();const title=$("title").value
  if(!response.ok||!result.ok)throw new Error(result.error||"Telegram upload failed.");
  videoUrl=result.videoUrl;
  videoPath="telegram:"+result.messageId;
- $("videoUploadStatus").textContent="✓ Converted to browser-compatible MP4 and uploaded successfully.";
+ // Replace the unsupported local HEVC preview with the converted H.264 MP4 from the backend.
+ const preview=$("videoPreview");
+ if(previewObjectUrl){URL.revokeObjectURL(previewObjectUrl);previewObjectUrl="";}
+ preview.pause();
+ preview.removeAttribute("src");
+ preview.load();
+ preview.src=result.videoUrl;
+ preview.load();
+ $("uploadEmpty").classList.add("hidden");
+ $("videoPreviewWrap").classList.remove("hidden");
+ $("previewFileName").textContent=(result.fileName||"Converted video.mp4")+" · Converted H.264 MP4";
+ $("videoUploadStatus").textContent="✓ Conversion and upload complete. Loading converted video preview…";
+ preview.onloadedmetadata=()=>{
+   if(preview.videoWidth>0&&preview.videoHeight>0){
+     $("videoUploadStatus").textContent="✓ Converted video preview ready · "+preview.videoWidth+" × "+preview.videoHeight+".";
+   }else{
+     $("videoUploadStatus").textContent="Upload completed, but the converted video has no visible video track.";
+   }
+ };
+ preview.onerror=()=>{
+   $("videoUploadStatus").textContent="Video was uploaded, but preview could not load. Check the Render video API.";
+ };
 }const data={title,description:$("description").value.trim(),videoUrl,videoPath,badge:$("badge").value,published:$("published").checked,updatedAt:firebase.firestore.FieldValue.serverTimestamp(),updatedBy:auth.currentUser.email};if(id){await db.collection(COLLECTION).doc(id).update(data);}else{data.createdAt=firebase.firestore.FieldValue.serverTimestamp();await db.collection(COLLECTION).add(data);}resetForm();await loadTemplates();setStatus("formStatus","Video template saved successfully.",true);}catch(e){setStatus("formStatus","Save failed: "+e.message+" — Admin upload ke liye verified "+ADMIN_EMAIL+" account se sign in karein.");}finally{$("saveBtn").disabled=false;}}
 async function togglePublish(t){try{await db.collection(COLLECTION).doc(t.id).update({published:!t.published,updatedAt:firebase.firestore.FieldValue.serverTimestamp(),updatedBy:auth.currentUser.email});await loadTemplates();}catch(e){alert("Could not update template: "+e.message);}}
 async function deleteTemplate(t){if(!confirm("Delete '"+t.title+"' permanently?"))return;try{await db.collection(COLLECTION).doc(t.id).delete();await loadTemplates();}catch(e){alert("Could not delete template: "+e.message);}}
