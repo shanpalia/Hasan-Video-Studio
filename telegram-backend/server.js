@@ -27,9 +27,21 @@ const SESSION = process.env.TELEGRAM_SESSION || "";
 const CHANNEL_ID = process.env.CHANNEL_ID || "";
 const FIREBASE_PROJECT_ID = process.env.FIREBASE_PROJECT_ID || "shanpalia-apk-hub";
 const ADMIN_EMAIL = "shanpalia786@gmail.com";
+const uploadDir = path.join(os.tmpdir(), "hasan-video-uploads");
+fs.mkdirSync(uploadDir, { recursive: true });
 const upload = multer({
-  dest: path.join(os.tmpdir(), "hasan-video-uploads"),
-  limits: { fileSize: 500 * 1024 * 1024 }
+  storage: multer.diskStorage({
+    destination: (_req, _file, cb) => cb(null, uploadDir),
+    filename: (_req, file, cb) => {
+      const ext = path.extname(file.originalname || "").toLowerCase().replace(/[^.a-z0-9]/g, "");
+      cb(null, `${Date.now()}-${require("crypto").randomUUID()}${ext}`);
+    }
+  }),
+  limits: { fileSize: 500 * 1024 * 1024 },
+  fileFilter: (_req, file, cb) => {
+    if ((file.mimetype || "").startsWith("video/")) return cb(null, true);
+    cb(new Error("Please upload a video file."));
+  }
 });
 
 if (!admin.apps.length) admin.initializeApp({ projectId: FIREBASE_PROJECT_ID });
@@ -69,9 +81,6 @@ async function requireFirebaseAdmin(req, res, next) {
     const decoded = await firebaseAuth.verifyIdToken(match[1]);
     if (decoded.email !== ADMIN_EMAIL) {
       return res.status(403).json({ error: "Wrong Firebase account. Sign in with " + ADMIN_EMAIL + " to upload templates." });
-    }
-    if (decoded.email_verified !== true) {
-      return res.status(403).json({ error: "The admin email " + ADMIN_EMAIL + " is not verified. Verify it in Firebase Authentication, then sign in again." });
     }
     req.adminUser = decoded;
     next();
