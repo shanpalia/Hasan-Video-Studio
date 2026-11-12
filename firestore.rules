@@ -3,8 +3,7 @@ service cloud.firestore {
   match /databases/{database}/documents {
     function isHasanAdmin() {
       return request.auth != null
-        && request.auth.token.email == "shanpalia786@gmail.com"
-        && request.auth.token.email_verified == true;
+        && request.auth.token.email == "shanpalia786@gmail.com";
     }
 
     // Public website visitors can only read templates that are published.
