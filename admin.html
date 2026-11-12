@@ -71,25 +71,23 @@ input,select,textarea{border-radius:12px;background:#fcfffd}
   <div class="side-label">WORKSPACE</div>
   <button class="side-link active" data-target="overview"><span>▦</span> Dashboard</button>
   <button class="side-link" data-target="formPanel"><span>＋</span> Add Template</button>
-  <button class="side-link" data-target="templateManager"><span>▤</span> Manage Templates</button>
   <div class="side-label side-label-spaced">QUICK LINKS</div>
   <a class="side-link side-anchor" href="./index.html"><span>↗</span> View Website</a>
   <div class="side-bottom"><div class="admin-avatar">SP</div><div><b>Admin</b><small>ShanPalia</small></div></div>
 </aside>
 <div class="admin-main">
 <main id="dashboard" class="wrap page hidden">
-<div class="welcome" id="overview"><div><h1>Template Dashboard</h1><p class="muted">Add, edit, publish and manage the templates shown on your website.</p></div><span id="adminIdentity" class="pill">Admin</span></div>
+<div class="welcome" id="overview"><div><h1>Template Dashboard</h1><p class="muted">Your published homepage templates and upload overview.</p></div><span id="adminIdentity" class="pill">Admin</span></div>
 <div class="stats"><div class="stat"><small>Total templates</small><b id="totalCount">0</b></div><div class="stat"><small>Published</small><b id="publishedCount">0</b></div><div class="stat"><small>Drafts</small><b id="draftCount">0</b></div></div>
 <section class="panel" id="templateManager"><div class="listhead"><div><h2>Your Templates</h2><p class="muted">Edit, publish/unpublish or delete a template.</p></div><button id="refreshBtn" class="secondary">↻ Refresh</button></div><div id="templateList" class="templates"><div class="empty">Loading templates…</div></div></section>
-<section class="panel" id="formPanel"><h2 id="formTitle">＋ Add New Template</h2><p class="muted">Only templates you publish will appear on the public homepage.</p>
+<section class="panel" id="formPanel"><h2 id="formTitle">＋ Add New Template</h2><p class="muted">Complete the details, then publish directly to the homepage.</p>
 <form id="templateForm"><input id="docId" type="hidden"><div class="formgrid">
 <div class="field"><label for="title">Template name *</label><input id="title" maxlength="70" required placeholder="e.g. Wedding Cinematic"></div>
 
 <div class="field full"><div class="description-head"><label for="description">Description</label><button type="button" class="secondary ai-description-btn" id="generateDescriptionBtn">✦ Generate with AI</button></div><textarea id="description" maxlength="240" placeholder="AI se description banwane ke liye template name likhein"></textarea><small id="descriptionAiStatus" class="muted">AI will create a short description from the template name and video filename.</small></div>
-<div class="field full"><label for="videoFile">Upload Template Video *</label><div class="video-uploader" id="videoDropZone"><input id="videoFile" type="file" accept="video/mp4,video/webm,video/quicktime,video/*" hidden><div class="upload-empty" id="uploadEmpty"><div class="upload-icon">▶</div><strong>Drop your video here</strong><span>or click to browse from your device</span><small>MP4 · WebM · MOV · Maximum 500 MB</small><button type="button" class="secondary" id="chooseVideoBtn">Choose Video</button></div><div class="video-preview-wrap hidden" id="videoPreviewWrap"><video id="videoPreview" controls playsinline preload="metadata"></video><div class="preview-file"><span id="previewFileName">Selected video</span><button type="button" class="secondary" id="changeVideoBtn">Change Video</button></div></div></div><p class="muted" style="margin-top:7px">Preview your video before saving. Upload will start when you click Save Template.</p><div id="videoUploadStatus" class="muted" style="margin-top:7px"></div></div>
+<div class="field full"><label for="videoFile">Upload Template Video *</label><div class="video-uploader" id="videoDropZone"><input id="videoFile" type="file" accept="video/mp4,video/webm,video/quicktime,video/*" hidden><div class="upload-empty" id="uploadEmpty"><div class="upload-icon">▶</div><strong>Drop your video here</strong><span>or click to browse from your device</span><small>MP4 · WebM · MOV · Maximum 500 MB</small><button type="button" class="secondary" id="chooseVideoBtn">Choose Video</button></div><div class="video-preview-wrap hidden" id="videoPreviewWrap"><video id="videoPreview" controls playsinline preload="metadata"></video><div class="preview-file"><span id="previewFileName">Selected video</span><button type="button" class="secondary" id="changeVideoBtn">Change Video</button></div></div></div><p class="muted" style="margin-top:7px">Preview your video before saving. Upload starts when you click Publish Template.</p><div id="videoUploadStatus" class="muted" style="margin-top:7px"></div><div id="uploadProgress" class="hidden" style="margin-top:12px;padding:13px;border:1px solid #cfeee0;border-radius:13px;background:#f5fff9"><div style="display:flex;justify-content:space-between;gap:10px;font-size:12px;font-weight:800"><span id="uploadProgressLabel">Uploading video…</span><span id="uploadProgressPercent">0%</span></div><div style="height:9px;background:#dcefe6;border-radius:99px;overflow:hidden;margin:9px 0"><div id="uploadProgressBar" style="height:100%;width:0%;background:linear-gradient(90deg,#087b61,#13c99b);border-radius:99px;transition:width .15s"></div></div><div id="uploadProgressDetails" style="font-size:11px;color:#617a72">0 MB uploaded · 0 MB remaining</div></div></div>
 <div class="field"><label for="badge">Label</label><select id="badge"><option value="">None</option><option>New</option><option>Popular</option><option>Trending</option></select></div>
-</div><label class="checkrow"><input id="published" type="checkbox" checked> Publish this template on homepage</label>
-<div class="formactions"><button class="primary" type="submit" id="saveBtn">Save Template</button><button class="secondary" type="button" id="resetBtn">Clear Form</button></div><div id="formStatus" class="status"></div></form></section>
+</div><div class="formactions"><button class="primary" type="submit" id="saveBtn">Publish Template</button><button class="secondary" type="button" id="resetBtn">Clear Form</button></div><div id="formStatus" class="status"></div></form></section>
 <div id="dashboardNotice" class="notice">Connecting to Firestore…</div><div id="verificationActions" class="hidden" style="margin-top:12px"><button type="button" id="resendVerificationBtn" class="primary">✉ Resend Verification Email</button><span id="verificationStatus" class="muted" style="display:block;margin-top:8px"></span></div>
 </main>
 </div>
@@ -106,7 +104,7 @@ const loadScript=src=>new Promise((resolve,reject)=>{const s=document.createElem
 let auth,db,templates=[],selectedVideo=null,previewObjectUrl="";
 function setStatus(id,msg,ok=false){$(id).textContent=msg;$(id).style.color=ok?"#087d63":"#a12d2d";}
 function safeUrl(value){if(!value)return "";try{const u=new URL(value);return ["https:","http:"].includes(u.protocol)?u.href:"";}catch{return "";}}
-function resetForm(){ $("templateForm").reset();$("docId").value="";selectedVideo=null;$("videoPreview").pause();$("videoPreview").removeAttribute("src");$("videoPreviewWrap").classList.add("hidden");$("uploadEmpty").classList.remove("hidden");$("videoFile").value="";if(previewObjectUrl){URL.revokeObjectURL(previewObjectUrl);previewObjectUrl="";} $("videoUploadStatus").textContent="";$("formTitle").textContent="＋ Add New Video Template";$("saveBtn").textContent="Save Template";setStatus("formStatus","");}
+function resetForm(){ $("templateForm").reset();$("docId").value="";selectedVideo=null;$("videoPreview").pause();$("videoPreview").removeAttribute("src");$("videoPreviewWrap").classList.add("hidden");$("uploadEmpty").classList.remove("hidden");$("videoFile").value="";if(previewObjectUrl){URL.revokeObjectURL(previewObjectUrl);previewObjectUrl="";} $("videoUploadStatus").textContent="";$("formTitle").textContent="＋ Add New Video Template";$("saveBtn").textContent="Publish Template";setStatus("formStatus","");}
 function render(){
  $("totalCount").textContent=templates.length;
  $("publishedCount").textContent=templates.filter(t=>t.published===true).length;
@@ -124,7 +122,7 @@ function render(){
   actions.append(edit,toggle,del);row.append(img,info,actions);list.append(row);
  });
 }
-function editTemplate(t){$("docId").value=t.id;$("title").value=t.title||"";$("description").value=t.description||"";$("badge").value=t.badge||"";$("published").checked=t.published===true;selectedVideo=null;$("videoFile").value="";$("videoPreview").src=safeUrl(t.videoUrl)||"";$("videoPreviewWrap").classList.toggle("hidden",!t.videoUrl);$("uploadEmpty").classList.toggle("hidden",!!t.videoUrl);$("previewFileName").textContent=t.videoUrl?"Saved video preview":"Selected video";$("videoUploadStatus").textContent=t.videoUrl?"Current video is saved. Choose another file to replace it.":"";$("formTitle").textContent="✎ Edit Video Template";$("saveBtn").textContent="Update Template";$("formPanel").scrollIntoView({behavior:"smooth"});}
+function editTemplate(t){showAdminView("add");$("docId").value=t.id;$("title").value=t.title||"";$("description").value=t.description||"";$("badge").value=t.badge||"";$("published").checked=t.published===true;selectedVideo=null;$("videoFile").value="";$("videoPreview").src=safeUrl(t.videoUrl)||"";$("videoPreviewWrap").classList.toggle("hidden",!t.videoUrl);$("uploadEmpty").classList.toggle("hidden",!!t.videoUrl);$("previewFileName").textContent=t.videoUrl?"Saved video preview":"Selected video";$("videoUploadStatus").textContent=t.videoUrl?"Current video is saved. Choose another file to replace it.":"";$("formTitle").textContent="✎ Edit Video Template";$("saveBtn").textContent="Publish Changes";$("formPanel").scrollIntoView({behavior:"smooth"});}
 async function loadTemplates(){setStatus("dashboardNotice","Loading templates…",true);try{const snap=await db.collection(COLLECTION).get();templates=snap.docs.map(d=>({id:d.id,...d.data()}));const timeOf=t=>{const v=t.createdAt||t.updatedAt;try{return v&&typeof v.toMillis==="function"?v.toMillis():(v?new Date(v).getTime():0);}catch{return 0;}};templates.sort((a,b)=>timeOf(b)-timeOf(a));render();$("dashboardNotice").textContent="Firestore connected · "+COLLECTION; $("dashboardNotice").className="notice ok";}catch(e){$("dashboardNotice").className="notice";$("dashboardNotice").textContent="Firestore permission denied. Open Firebase Console → Firestore Database → Rules, paste the exact rules from this repository file firestore.rules and click Publish. Then sign out and sign in again. Details: "+e.message; $("dashboardNotice").insertAdjacentHTML("beforeend", " <a href=\"https://console.firebase.google.com/project/shanpalia-apk-hub/firestore/rules\" target=\"_blank\" rel=\"noopener\" style=\"font-weight:800;text-decoration:underline\">Open Firestore Rules</a>");}}
 
 async function generateAiDescription(){
@@ -145,44 +143,63 @@ async function generateAiDescription(){
  }catch(e){status.textContent="AI description failed: "+e.message;status.style.color="#a12d2d";}
  finally{btn.disabled=false;btn.textContent="✦ Generate with AI";}
 }
-async function saveTemplate(ev){ev.preventDefault();const title=$("title").value.trim(),file=selectedVideo;if(!title){setStatus("formStatus","Template name is required.");return;}const id=$("docId").value;const old=templates.find(t=>t.id===id);if(!file&&!(old&&old.videoUrl)){setStatus("formStatus","Please select a video file first.");return;}if(file&&file.size>500*1024*1024){setStatus("formStatus","Video is larger than 500 MB. Please choose a smaller video.");return;}$("saveBtn").disabled=true;try{let videoUrl=old?.videoUrl||"",videoPath=old?.videoPath||"";if(file){
- const currentUser=auth.currentUser;
- if(!currentUser)throw new Error("Firebase session expired. Sign out and sign in again with "+ADMIN_EMAIL+".");
- if((currentUser.email||"").toLowerCase()!==ADMIN_EMAIL.toLowerCase())throw new Error("Wrong account. Please sign in with "+ADMIN_EMAIL+".");
- const token=await currentUser.getIdToken(true);
- if(!token)throw new Error("Firebase could not create an ID token. Sign out and sign in again.");
- const form=new FormData();
- form.append("video",file,file.name);
- form.append("title",title);
- $("videoUploadStatus").textContent="Converting video to H.264 MP4 and uploading to private Telegram channel… Please keep this page open. This may take a few minutes.";
- const response=await fetch(TELEGRAM_API+"/api/upload",{method:"POST",headers:{Authorization:"Bearer "+token},body:form});
- const result=await response.json().catch(()=>({}));
- if(!response.ok||!result.ok)throw new Error(result.error||"Telegram upload failed.");
- videoUrl=result.videoUrl;
- videoPath="telegram:"+result.messageId;
- // Replace the unsupported local HEVC preview with the converted H.264 MP4 from the backend.
- const preview=$("videoPreview");
- if(previewObjectUrl){URL.revokeObjectURL(previewObjectUrl);previewObjectUrl="";}
- preview.pause();
- preview.removeAttribute("src");
- preview.load();
- preview.src=result.videoUrl;
- preview.load();
- $("uploadEmpty").classList.add("hidden");
- $("videoPreviewWrap").classList.remove("hidden");
- $("previewFileName").textContent=(result.fileName||"Converted video.mp4")+" · Converted H.264 MP4";
- $("videoUploadStatus").textContent="✓ Conversion and upload complete. Loading converted video preview…";
- preview.onloadedmetadata=()=>{
-   if(preview.videoWidth>0&&preview.videoHeight>0){
-     $("videoUploadStatus").textContent="✓ Converted video preview ready · "+preview.videoWidth+" × "+preview.videoHeight+".";
-   }else{
-     $("videoUploadStatus").textContent="Upload completed, but the converted video has no visible video track.";
-   }
- };
- preview.onerror=()=>{
-   $("videoUploadStatus").textContent="Video was uploaded, but preview could not load. Check the Render video API.";
- };
-}const data={title,description:$("description").value.trim(),videoUrl,videoPath,badge:$("badge").value,published:$("published").checked,updatedAt:firebase.firestore.FieldValue.serverTimestamp(),updatedBy:auth.currentUser.email};if(id){await db.collection(COLLECTION).doc(id).update(data);}else{data.createdAt=firebase.firestore.FieldValue.serverTimestamp();await db.collection(COLLECTION).add(data);}resetForm();await loadTemplates();setStatus("formStatus","Video template saved successfully.",true);}catch(e){console.error("Template save failed:",e);setStatus("formStatus","Save failed: "+e.message);}finally{$("saveBtn").disabled=false;}}
+function formatBytes(bytes){if(bytes<1024)return bytes+" B";if(bytes<1024*1024)return (bytes/1024).toFixed(1)+" KB";return (bytes/1024/1024).toFixed(2)+" MB";}
+function setUploadProgress(loaded,total,label){
+ const box=$("uploadProgress");box.classList.remove("hidden");
+ const pct=total?Math.min(100,Math.round(loaded/total*100)):0;
+ $("uploadProgressBar").style.width=pct+"%";$("uploadProgressPercent").textContent=pct+"%";
+ $("uploadProgressLabel").textContent=label||"Uploading video…";
+ $("uploadProgressDetails").textContent=formatBytes(loaded)+" uploaded · "+formatBytes(Math.max(0,total-loaded))+" remaining · Total "+formatBytes(total);
+}
+function uploadVideoWithProgress(form,token,file){
+ return new Promise((resolve,reject)=>{
+  const xhr=new XMLHttpRequest();xhr.open("POST",TELEGRAM_API+"/api/upload");xhr.setRequestHeader("Authorization","Bearer "+token);
+  xhr.upload.onprogress=e=>{if(e.lengthComputable)setUploadProgress(e.loaded,e.total,"Uploading to video server…");};
+  xhr.upload.onload=()=>{$("uploadProgressBar").style.width="100%";$("uploadProgressPercent").textContent="100%";$("uploadProgressDetails").textContent=formatBytes(file.size)+" video sent · Server is converting to H.264 and sending to Telegram…";$("uploadProgressLabel").textContent="Upload complete · Processing on server";};
+  xhr.onload=()=>{let result={};try{result=JSON.parse(xhr.responseText||"{}");}catch{}if(xhr.status>=200&&xhr.status<300&&result.ok)resolve(result);else reject(new Error(result.error||"Telegram upload failed ("+xhr.status+")."));};
+  xhr.onerror=()=>reject(new Error("Network error during upload. Check your internet connection."));
+  xhr.onabort=()=>reject(new Error("Upload cancelled."));
+  xhr.send(form);
+ });
+}
+async function saveTemplate(ev){
+ ev.preventDefault();
+ const title=$("title").value.trim(),file=selectedVideo;
+ if(!title){setStatus("formStatus","Template name is required.");return;}
+ const id=$("docId").value,old=templates.find(t=>t.id===id);
+ if(!file&&!(old&&old.videoUrl)){setStatus("formStatus","Please select a video file first.");return;}
+ if(file&&file.size>500*1024*1024){setStatus("formStatus","Video is larger than 500 MB.");return;}
+ $("saveBtn").disabled=true;$("uploadProgress").classList.add("hidden");
+ try{
+  let videoUrl=old?.videoUrl||"",videoPath=old?.videoPath||"";
+  if(file){
+   const currentUser=auth.currentUser;
+   if(!currentUser)throw new Error("Firebase session expired. Sign out and sign in again with "+ADMIN_EMAIL+".");
+   if((currentUser.email||"").toLowerCase()!==ADMIN_EMAIL.toLowerCase())throw new Error("Wrong account. Please sign in with "+ADMIN_EMAIL+".");
+   const token=await currentUser.getIdToken(true),form=new FormData();
+   form.append("video",file,file.name);form.append("title",title);
+   setUploadProgress(0,file.size,"Preparing upload…");
+   $("videoUploadStatus").textContent="Live upload progress: uploaded size and remaining size are shown below. Please keep this page open.";
+   const result=await uploadVideoWithProgress(form,token,file);
+   $("uploadProgressLabel").textContent="Telegram upload complete";
+   $("uploadProgressDetails").textContent="Video converted to H.264/AAC and stored in Telegram.";
+   videoUrl=result.videoUrl;videoPath="telegram:"+result.messageId;
+   const preview=$("videoPreview");
+   if(previewObjectUrl){URL.revokeObjectURL(previewObjectUrl);previewObjectUrl="";}
+   preview.pause();preview.removeAttribute("src");preview.load();preview.src=result.videoUrl;preview.load();
+   $("uploadEmpty").classList.add("hidden");$("videoPreviewWrap").classList.remove("hidden");
+   $("previewFileName").textContent=(result.fileName||"Converted video.mp4")+" · Converted H.264 MP4";
+   $("videoUploadStatus").textContent="✓ Upload and conversion complete. Publishing to homepage…";
+  }
+  const data={title,description:$("description").value.trim(),videoUrl,videoPath,badge:$("badge").value,published:true,updatedAt:firebase.firestore.FieldValue.serverTimestamp(),updatedBy:auth.currentUser.email};
+  if(id){await db.collection(COLLECTION).doc(id).update(data);}else{data.createdAt=firebase.firestore.FieldValue.serverTimestamp();await db.collection(COLLECTION).add(data);}
+  $("uploadProgressLabel").textContent="Published successfully";$("uploadProgressPercent").textContent="100%";
+  $("uploadProgressBar").style.width="100%";$("uploadProgressDetails").textContent="Template is now published on the homepage.";
+  await loadTemplates();setStatus("formStatus","✓ Template published successfully on homepage.",true);
+  setTimeout(()=>{resetForm();showAdminView("dashboard");},900);
+ }catch(e){console.error("Template publish failed:",e);setStatus("formStatus","Publish failed: "+e.message);$("uploadProgressLabel").textContent="Publish failed";$("uploadProgressDetails").textContent=e.message;}
+ finally{$("saveBtn").disabled=false;}
+}
 async function togglePublish(t){try{await db.collection(COLLECTION).doc(t.id).update({published:!t.published,updatedAt:firebase.firestore.FieldValue.serverTimestamp(),updatedBy:auth.currentUser.email});await loadTemplates();}catch(e){alert("Could not update template: "+e.message);}}
 async function deleteTemplate(t){if(!confirm("Delete '"+t.title+"' permanently?"))return;try{await db.collection(COLLECTION).doc(t.id).delete();await loadTemplates();}catch(e){alert("Could not delete template: "+e.message);}}
 async function startDashboard(user){
@@ -217,7 +234,7 @@ async function startDashboard(user){
    const player=$("videoPreview");player.pause();player.removeAttribute("src");player.load();player.src=previewObjectUrl;player.load();
    $("previewFileName").textContent=file.name+" · "+(file.size/1024/1024).toFixed(1)+" MB";
    $("uploadEmpty").classList.add("hidden");$("videoPreviewWrap").classList.remove("hidden");
-   $("videoUploadStatus").textContent="Video selected. Loading preview…";
+   $("videoUploadStatus").textContent="Video selected. Loading preview…";$("uploadProgress").classList.add("hidden");
   }
   $("videoPreview").onloadedmetadata=()=>{const v=$("videoPreview");if(v.videoWidth>0&&v.videoHeight>0){$("videoUploadStatus").textContent="✓ Video preview ready · "+v.videoWidth+" × "+v.videoHeight+". Click Save Template to upload.";}else{$("videoUploadStatus").textContent="Audio track detected but no video picture. This file may be audio-only or use an unsupported video codec.";}};
   $("videoPreview").onerror=()=>{$("videoUploadStatus").textContent="Browser cannot decode this video preview. Try MP4 (H.264 video + AAC audio).";};
@@ -246,7 +263,7 @@ document.querySelectorAll(".side-link[data-target]").forEach(btn=>btn.addEventLi
   document.querySelectorAll(".side-link[data-target]").forEach(x=>x.classList.remove("active"));
   btn.classList.add("active");
   const target=btn.dataset.target;
-  showAdminView(target==="formPanel"?"add":target==="templateManager"?"manage":"dashboard");
+  showAdminView(target==="formPanel"?"add":"dashboard");
 }));
   $("resendVerificationBtn").onclick=async()=>{const btn=$("resendVerificationBtn"),status=$("verificationStatus");btn.disabled=true;status.textContent="Sending verification email…";try{if(!auth.currentUser)throw new Error("Please sign in again first.");await auth.currentUser.sendEmailVerification();status.textContent="✓ Verification email sent to "+ADMIN_EMAIL+". Check Inbox, Spam and Promotions. After verifying, sign out and sign in again.";status.style.color="#087d63";}catch(e){status.textContent="Could not send email: "+e.message;status.style.color="#a12d2d";}finally{btn.disabled=false;}};
   $("logoutBtn").onclick=()=>auth.signOut();$("generateDescriptionBtn").onclick=generateAiDescription;$("templateForm").addEventListener("submit",saveTemplate);$("resetBtn").onclick=resetForm;$("refreshBtn").onclick=loadTemplates;
