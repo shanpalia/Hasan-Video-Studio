@@ -140,7 +140,7 @@ let auth,db,templates=[],selectedVideo=null,previewObjectUrl="",phoneAnyPreviewU
 function setStatus(id,msg,ok=false){$(id).textContent=msg;$(id).style.color=ok?"#087d63":"#a12d2d";}
 function safeUrl(value){if(!value)return "";try{const u=new URL(value);return ["https:","http:"].includes(u.protocol)?u.href:"";}catch{return "";}}
 
-function resetForm(){ $("templateForm").reset();$("docId").value="";$("sceneCount").value=4;$("sceneDuration").value=3;selectedVideo=null;if(phoneAnyPreviewUrl){URL.revokeObjectURL(phoneAnyPreviewUrl);phoneAnyPreviewUrl="";} $("phoneAnyVideoFile").value="";$("phoneAnyVideoStatus").textContent="Choose any video from your device to test it here. It will not be uploaded or published.";$("phoneVideoPreview").pause();$("phoneVideoPreview").removeAttribute("src");$("phoneVideoPreview").load();$("phoneVideoPlaceholder").classList.remove("hidden");$("phonePlayToggle").textContent="▶";$("phoneTitle").textContent="Your Template Name";$("phoneDescription").textContent="Your template description will appear here. Add details on the left to preview.";$("phoneBadge").textContent="NEW";$("videoPreview").pause();$("videoPreview").removeAttribute("src");$("videoPreviewWrap").classList.add("hidden");$("uploadEmpty").classList.remove("hidden");$("videoFile").value="";if(previewObjectUrl){URL.revokeObjectURL(previewObjectUrl);previewObjectUrl="";} $("videoUploadStatus").textContent="";$("formTitle").textContent="＋ Add New Video Template";$("saveBtn").textContent="Publish Template";setStatus("formStatus","");}
+function resetForm(){ $("templateForm").reset();$("docId").value="";selectedVideo=null;if(phoneAnyPreviewUrl){URL.revokeObjectURL(phoneAnyPreviewUrl);phoneAnyPreviewUrl="";} $("phoneAnyVideoFile").value="";$("phoneAnyVideoStatus").textContent="Choose any video from your device to test it here. It will not be uploaded or published.";$("phoneVideoPreview").pause();$("phoneVideoPreview").removeAttribute("src");$("phoneVideoPreview").load();$("phoneVideoPlaceholder").classList.remove("hidden");$("phonePlayToggle").textContent="▶";$("phoneTitle").textContent="Your Template Name";$("phoneDescription").textContent="Your template description will appear here. Add details on the left to preview.";$("phoneBadge").textContent="NEW";$("videoPreview").pause();$("videoPreview").removeAttribute("src");$("videoPreviewWrap").classList.add("hidden");$("uploadEmpty").classList.remove("hidden");$("videoFile").value="";if(previewObjectUrl){URL.revokeObjectURL(previewObjectUrl);previewObjectUrl="";} $("videoUploadStatus").textContent="";$("formTitle").textContent="＋ Add New Video Template";$("saveBtn").textContent="Publish Template";setStatus("formStatus","");}
 function render(){
  $("totalCount").textContent=templates.length;
  $("publishedCount").textContent=templates.filter(t=>t.published===true).length;
@@ -188,9 +188,6 @@ async function analyzeUploadedVideo(){
   if(data.description){$("description").value=data.description;$("description").dispatchEvent(new Event("input"));}
   const suggested=(data.scenes||[]).filter(x=>x.replaceable);
   if(suggested.length){
-   $("sceneCount").value=Math.min(12,suggested.length);
-   $("sceneDuration").value=Math.max(1,Math.round(suggested[0].duration||3));
-   renderSceneBuilder(suggested);
    window.hasanAiSceneSuggestions=suggested;
   }
   status.textContent="✓ AI complete: title + description ready; "+(data.scenes||[]).length+" scenes checked, "+suggested.length+" possible photo slots. Please review before publishing.";
