@@ -284,6 +284,148 @@ app.post("/api/analyze-template", requireFirebaseAdmin, upload.single("video"), 
     res.status(e.status || 500).json({ error: e.message || "Template analysis failed." });
   } finally { fs.promises.unlink(req.file.path).catch(() => {}); }
 });
+
+const TEMPLATE_PREFIX = "HASAN_TEMPLATE_V1\n";
+function decodeTemplateMessage(message) {
+  const raw = String(message?.message || "");
+  if (!raw.startsWith(TEMPLATE_PREFIX)) return null;
+  try {
+    const data = JSON.parse(raw.slice(TEMPLATE_PREFIX.length));
+    if (!data || !data.id || !data.title) return null;
+    return { ...data, id: String(data.id), metadataMessageId: Number(message.id), createdAt: data.createdAt || new Date(Number(message.date || 0) * 1000).toISOString() };
+  } catch (_) { return null; }
+}
+function encodeTemplate(data) {
+  const payload = { ...data };
+  delete payload.metadataMessageId;
+  const text = TEMPLATE_PREFIX + JSON.stringify(payload);
+  if (text.length > 3900) {
+    const e = new Error("Template details are too large for a Telegram message. Reduce the scene data and retry.");
+    e.status = 413; throw e;
+  }
+  return text;
+}
+async function readTelegramTemplates() {
+  const tg = await telegram();
+  const channel = await telegramChannelEntity(tg);
+  const messages = await tg.getMessages(channel, { limit: 1000 });
+  return messages.map(decodeTemplateMessage).filter(Boolean).sort((a,b) => new Date(b.updatedAt || b.createdAt).getTime() - new Date(a.updatedAt || a.createdAt).getTime());
+}
+app.get("/api/templates", async (_req, res) => {
+  try {
+    const templates = await readTelegramTemplates();
+    res.setHeader("Cache-Control", "no-store");
+    res.json({ ok: true, templates });
+  } catch (e) {
+    console.error("Telegram template list failed:", e);
+    res.status(e.status || 500).json({ error: e.message || "Could not load templates from Telegram." });
+  }
+});
+app.get("/api/templates/:id", async (req, res) => {
+  try {
+    const template = (await readTelegramTemplates()).find(t => t.id === req.params.id);
+    if (!template) return res.status(404).json({ error: "Template not found." });
+    res.json({ ok: true, template });
+  } catch (e) {
+    res.status(e.status || 500).json({ error: e.message || "Could not load template." });
+  }
+});
+app.post("/api/templates", requireFirebaseAdmin, async (req, res) => {
+  try {
+    const tg = await telegram();
+    const channel = await telegramChannelEntity(tg);
+    const now = new Date().toISOString();
+    const data = {
+      id: String(req.body.id || require("crypto").randomUUID()),
+      title: String(req.body.title || "").trim().slice(0, 100),
+      description: String(req.body.description || "").slice(0, 500),
+      videoUrl: String(req.body.videoUrl || ""),
+      videoPath: String(req.body.videoPath || ""),
+      videoMessageId: Number(req.body.videoMessageId || String(req.body.videoPath || "").replace(/^telegram:/, "")) || null,
+      badge: String(req.body.badge || "").slice(0, 40),
+      scenes: Array.isArray(req.body.scenes) ? req.body.scenes.slice(0, 30) : [],
+      templateMode: String(req.body.templateMode || "video-template"),
+      published: req.body.published !== false,
+      createdAt: req.body.createdAt || now, updatedAt: now,
+      updatedBy: String(req.adminUser.email || "")
+    };
+    if (!data.title || !data.videoUrl) return res.status(400).json({ error: "Template title and video URL are required." });
+    const message = await tg.sendMessage(channel, { message: encodeTemplate(data) });
+    data.metadataMessageId = Number(message.id);
+    res.json({ ok: true, template: data });
+  } catch (e) {
+    console.error("Telegram template save failed:", e);
+    res.status(e.status || 500).json({ error: e.message || "Could not save template to Telegram." });
+  }
+});
+app.put("/api/templates/:id", requireFirebaseAdmin, async (req, res) => {
+  try {
+    const tg = await telegram();
+    const channel = await telegramChannelEntity(tg);
+    const existing = (await readTelegramTemplates()).find(t => t.id === req.params.id);
+    if (!existing) return res.status(404).json({ error: "Template not found." });
+    const data = {
+      ...existing, ...req.body, id: existing.id,
+      title: String(req.body.title ?? existing.title).trim().slice(0, 100),
+      description: String(req.body.description ?? existing.description).slice(0, 500),
+      scenes: Array.isArray(req.body.scenes) ? req.body.scenes.slice(0, 30) : existing.scenes,
+      published: req.body.published === undefined ? existing.published : req.body.published === true,
+      updatedAt: new Date().toISOString(), updatedBy: String(req.adminUser.email || ""),
+      metadataMessageId: existing.metadataMessageId
+    };
+    await tg.editMessage(channel, { messageId: existing.metadataMessageId, message: encodeTemplate(data) });
+    res.json({ ok: true, template: data });
+  } catch (e) {
+    console.error("Telegram template update failed:", e);
+    res.status(e.status || 500).json({ error: e.message || "Could not update template in Telegram." });
+  }
+});
+app.delete("/api/templates/:id", requireFirebaseAdmin, async (req, res) => {
+  try {
+    const tg = await telegram();
+    const channel = await telegramChannelEntity(tg);
+    const existing = (await readTelegramTemplates()).find(t => t.id === req.params.id);
+    if (!existing) return res.status(404).json({ error: "Template not found." });
+    const ids = [existing.metadataMessageId, existing.videoMessageId].filter(n => Number.isSafeInteger(Number(n)) && Number(n) > 0).map(Number);
+    await tg.deleteMessages(channel, ids, true);
+    res.json({ ok: true });
+  } catch (e) {
+    console.error("Telegram template delete failed:", e);
+    res.status(e.status || 500).json({ error: e.message || "Could not delete template from Telegram." });
+  }
+});
+app.post("/api/templates/migrate", requireFirebaseAdmin, async (req, res) => {
+  try {
+    const items = Array.isArray(req.body.templates) ? req.body.templates.slice(0, 100) : [];
+    const existing = await readTelegramTemplates();
+    const known = new Set(existing.map(t => t.id));
+    const tg = await telegram();
+    const channel = await telegramChannelEntity(tg);
+    let migrated = 0, skipped = 0;
+    for (const item of items) {
+      const id = String(item.id || "");
+      if (!id || known.has(id)) { skipped++; continue; }
+      const data = {
+        id, title: String(item.title || "Untitled").slice(0,100),
+        description: String(item.description || "").slice(0,500),
+        videoUrl: String(item.videoUrl || ""), videoPath: String(item.videoPath || ""),
+        videoMessageId: Number(item.videoMessageId || String(item.videoPath || "").replace(/^telegram:/, "")) || null,
+        badge: String(item.badge || ""), scenes: Array.isArray(item.scenes) ? item.scenes.slice(0,30) : [],
+        templateMode: item.templateMode || "video-template", published: item.published === true,
+        createdAt: item.createdAt || new Date().toISOString(), updatedAt: item.updatedAt || new Date().toISOString(),
+        updatedBy: String(req.adminUser.email || "")
+      };
+      if (!data.videoUrl) { skipped++; continue; }
+      await tg.sendMessage(channel, { message: encodeTemplate(data) });
+      known.add(id); migrated++;
+    }
+    res.json({ ok: true, migrated, skipped });
+  } catch (e) {
+    console.error("Telegram template migration failed:", e);
+    res.status(e.status || 500).json({ error: e.message || "Could not migrate old templates." });
+  }
+});
+
 app.get("/api/video/:messageId", async (req, res) => {
   const messageId = Number(req.params.messageId);
   if (!Number.isSafeInteger(messageId) || messageId <= 0) return res.status(400).json({ error: "Invalid video ID." });
