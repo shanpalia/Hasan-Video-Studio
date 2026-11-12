@@ -231,8 +231,9 @@ async function saveTemplate(ev){
   if(id){await db.collection(COLLECTION).doc(id).update(data);}else{data.createdAt=firebase.firestore.FieldValue.serverTimestamp();await db.collection(COLLECTION).add(data);}
   $("uploadProgressLabel").textContent="Published successfully";$("uploadProgressPercent").textContent="100%";
   $("uploadProgressBar").style.width="100%";$("uploadProgressDetails").textContent="Template is now published on the homepage.";
-  await loadTemplates();setStatus("formStatus","✓ Template published successfully on homepage.",true);
-  setTimeout(()=>{resetForm();showAdminView("dashboard");},900);
+  await loadTemplates();
+  resetForm();showAdminView("dashboard");
+  setStatus("dashboardNotice","✓ Template published successfully and is now live on the homepage.",true);
  }catch(e){console.error("Template publish failed:",e);setStatus("formStatus","Publish failed: "+e.message);$("uploadProgressLabel").textContent="Publish failed";$("uploadProgressDetails").textContent=e.message;}
  finally{$("saveBtn").disabled=false;}
 }
@@ -259,6 +260,9 @@ async function startDashboard(user){
   
   if(!firebase.apps.length)firebase.initializeApp(firebaseConfig);
   auth=firebase.auth();db=firebase.firestore();
+  // Require a fresh admin login whenever this page is opened or reloaded.
+  await auth.setPersistence(firebase.auth.Auth.Persistence.NONE);
+  await auth.signOut();
   function isVideoFile(file){return !!file&&((file.type||"").toLowerCase().startsWith("video/")||/\.(mp4|m4v|mov|webm|mkv|avi|3gp)$/i.test(file.name||""));}
   function showSelectedVideo(file){
    if(!file)return;
