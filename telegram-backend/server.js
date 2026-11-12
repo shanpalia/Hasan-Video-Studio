@@ -199,6 +199,72 @@ app.post("/api/upload", requireFirebaseAdmin, upload.single("video"), async (req
     if (convertedPath) fs.promises.unlink(convertedPath).catch(() => {});
   }
 });
+
+function runFfmpeg(args, timeoutMs = 8 * 60 * 1000) {
+  return new Promise((resolve, reject) => {
+    if (!ffmpegPath) return reject(new Error("FFmpeg binary is unavailable."));
+    const proc = spawn(ffmpegPath, args, { stdio: ["ignore", "ignore", "pipe"] });
+    let stderr = "";
+    const timer = setTimeout(() => { proc.kill("SIGKILL"); reject(new Error("Scene analysis timed out.")); }, timeoutMs);
+    proc.stderr.on("data", chunk => { if (stderr.length < 20000) stderr += chunk.toString(); });
+    proc.on("error", err => { clearTimeout(timer); reject(err); });
+    proc.on("close", code => {
+      clearTimeout(timer);
+      if (code === 0) resolve(stderr);
+      else reject(new Error("FFmpeg scene analysis failed: " + stderr.slice(-1200)));
+    });
+  });
+}
+async function analyzeVideoWithGemini(filePath, originalName) {
+  const apiKey = process.env.GEMINI_API_KEY || "";
+  if (!apiKey) { const e = new Error("AI is not configured. Add GEMINI_API_KEY in Render Environment."); e.status = 503; throw e; }
+  const dir = await fs.promises.mkdtemp(path.join(os.tmpdir(), "hasan-scenes-"));
+  try {
+    const pattern = path.join(dir, "scene-%02d.jpg");
+    const log = await runFfmpeg(["-hide_banner", "-i", filePath, "-vf", "select='gt(scene,0.28)',scale=480:-1,showinfo", "-vsync", "vfr", "-frames:v", "10", "-q:v", "5", pattern]);
+    const times = [...log.matchAll(/pts_time:([0-9.]+)/g)].map(m => Number(m[1]));
+    const files = (await fs.promises.readdir(dir)).filter(n => n.endsWith(".jpg")).sort();
+    if (!files.length) {
+      const first = path.join(dir, "scene-01.jpg");
+      await runFfmpeg(["-y", "-ss", "0", "-i", filePath, "-frames:v", "1", "-vf", "scale=480:-1", first]);
+      files.push("scene-01.jpg"); times.push(0);
+    }
+    const imageParts = [];
+    for (let i = 0; i < files.length; i++) {
+      const bytes = await fs.promises.readFile(path.join(dir, files[i]));
+      imageParts.push({ inline_data: { mime_type: "image/jpeg", data: bytes.toString("base64") } });
+      imageParts.push({ text: "Frame " + (i + 1) + " approximate timestamp: " + Number(times[i] || 0).toFixed(2) + " seconds." });
+    }
+    const prompt = "Analyze these sampled keyframes from a user-uploaded short-form video template. Original filename: " + originalName + ". Return ONLY valid JSON with keys title (catchy template name, max 6 words), description (accurate public card description under 220 characters), scenes (array of objects with start, end, kind, replaceable, reason). Use only visible evidence. Scenes should cover likely distinct visual shots using the supplied timestamps; mark replaceable=true only when a shot appears to be a portrait/photo placeholder or a full-frame personal-media shot that a user could reasonably replace. Do not assume every cut is replaceable. If uncertain, mark false. Estimate start/end seconds; keep ordered, non-overlapping. Include confidence 0 to 1 for each scene.";
+    const body = { contents: [{ parts: [{ text: prompt }, ...imageParts] }], generationConfig: { temperature: 0.2, responseMimeType: "application/json" } };
+    const response = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=" + encodeURIComponent(apiKey), { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(result.error?.message || "Gemini analysis failed (" + response.status + ").");
+    const raw = result.candidates?.[0]?.content?.parts?.map(p => p.text || "").join("") || "";
+    let parsed;
+    try { parsed = JSON.parse(raw.replace(/^```json\s*|\s*```$/g, "")); }
+    catch (_) { throw new Error("AI returned invalid scene data. Please retry or use manual scenes."); }
+    const scenes = Array.isArray(parsed.scenes) ? parsed.scenes.slice(0, 12).map((v, i) => ({
+      id: "ai-scene-" + (i + 1), order: i + 1,
+      start: Math.max(0, Number(v.start) || 0), end: Math.max(0, Number(v.end) || 0),
+      duration: Math.max(0.5, (Number(v.end) || 0) - (Number(v.start) || 0)),
+      type: "photo", kind: String(v.kind || "shot").slice(0, 80),
+      replaceable: Boolean(v.replaceable), reason: String(v.reason || "").slice(0, 180),
+      confidence: Math.max(0, Math.min(1, Number(v.confidence) || 0))
+    })) : [];
+    return { title: String(parsed.title || "").slice(0, 70), description: String(parsed.description || "").slice(0, 240), scenes, sampledFrames: files.length };
+  } finally { await fs.promises.rm(dir, { recursive: true, force: true }).catch(() => {}); }
+}
+app.post("/api/analyze-template", requireFirebaseAdmin, upload.single("video"), async (req, res) => {
+  if (!req.file) return res.status(400).json({ error: "Select a video file to analyze." });
+  try {
+    const analysis = await analyzeVideoWithGemini(req.file.path, req.file.originalname);
+    res.json({ ok: true, ...analysis });
+  } catch (e) {
+    console.error("Template AI analysis failed:", e);
+    res.status(e.status || 500).json({ error: e.message || "Template analysis failed." });
+  } finally { fs.promises.unlink(req.file.path).catch(() => {}); }
+});
 app.get("/api/video/:messageId", async (req, res) => {
   const messageId = Number(req.params.messageId);
   if (!Number.isSafeInteger(messageId) || messageId <= 0) return res.status(400).json({ error: "Invalid video ID." });
