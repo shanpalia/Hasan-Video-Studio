@@ -140,7 +140,7 @@ let auth,db,templates=[],selectedVideo=null,previewObjectUrl="",phoneAnyPreviewU
 function setStatus(id,msg,ok=false){$(id).textContent=msg;$(id).style.color=ok?"#087d63":"#a12d2d";}
 function safeUrl(value){if(!value)return "";try{const u=new URL(value);return ["https:","http:"].includes(u.protocol)?u.href:"";}catch{return "";}}
 
-function resetForm(){ $("templateForm").reset();$("docId").value="";selectedVideo=null;if(phoneAnyPreviewUrl){URL.revokeObjectURL(phoneAnyPreviewUrl);phoneAnyPreviewUrl="";} $("phoneAnyVideoFile").value="";$("phoneAnyVideoStatus").textContent="Choose any video from your device to test it here. It will not be uploaded or published.";$("phoneVideoPreview").pause();$("phoneVideoPreview").removeAttribute("src");$("phoneVideoPreview").load();$("phoneVideoPlaceholder").classList.remove("hidden");$("phonePlayToggle").textContent="▶";$("phoneTitle").textContent="Your Template Name";$("phoneDescription").textContent="Your template description will appear here. Add details on the left to preview.";$("phoneBadge").textContent="NEW";$("videoPreview").pause();$("videoPreview").removeAttribute("src");$("videoPreviewWrap").classList.add("hidden");$("uploadEmpty").classList.remove("hidden");$("videoFile").value="";if(previewObjectUrl){URL.revokeObjectURL(previewObjectUrl);previewObjectUrl="";} $("videoUploadStatus").textContent="";$("formTitle").textContent="＋ Add New Video Template";$("saveBtn").textContent="Publish Template";setStatus("formStatus","");}
+function resetForm(){ $("templateForm").reset();$("docId").value="";selectedVideo=null;window.hasanAiSceneSuggestions=[];if(phoneAnyPreviewUrl){URL.revokeObjectURL(phoneAnyPreviewUrl);phoneAnyPreviewUrl="";} $("phoneAnyVideoFile").value="";$("phoneAnyVideoStatus").textContent="Choose any video from your device to test it here. It will not be uploaded or published.";$("phoneVideoPreview").pause();$("phoneVideoPreview").removeAttribute("src");$("phoneVideoPreview").load();$("phoneVideoPlaceholder").classList.remove("hidden");$("phonePlayToggle").textContent="▶";$("phoneTitle").textContent="Your Template Name";$("phoneDescription").textContent="Your template description will appear here. Add details on the left to preview.";$("phoneBadge").textContent="NEW";$("videoPreview").pause();$("videoPreview").removeAttribute("src");$("videoPreviewWrap").classList.add("hidden");$("uploadEmpty").classList.remove("hidden");$("videoFile").value="";if(previewObjectUrl){URL.revokeObjectURL(previewObjectUrl);previewObjectUrl="";} $("videoUploadStatus").textContent="";$("formTitle").textContent="＋ Add New Video Template";$("saveBtn").textContent="Publish Template";setStatus("formStatus","");}
 function render(){
  $("totalCount").textContent=templates.length;
  $("publishedCount").textContent=templates.filter(t=>t.published===true).length;
@@ -195,7 +195,7 @@ async function analyzeUploadedVideo(){
   if(!response.ok||!data.ok)throw new Error(data.error||("Analysis failed ("+response.status+")"));
   if(data.title){$("title").value=data.title;$("title").dispatchEvent(new Event("input"));}
   if(data.description){$("description").value=data.description;$("description").dispatchEvent(new Event("input"));}
-  const suggested=(data.scenes||[]).filter(x=>x.replaceable);
+  const suggested=(data.scenes||[]).filter(x=>x.replaceable);window.hasanAiSceneSuggestions=suggested;
   if(suggested.length){
    window.hasanAiSceneSuggestions=suggested;
   }
@@ -276,7 +276,7 @@ async function saveTemplate(ev){
    $("previewFileName").textContent=(result.fileName||"Converted video.mp4")+" · Converted H.264 MP4";
    $("videoUploadStatus").textContent="✓ Upload and conversion complete. Publishing to homepage…";
   }
-  const scenes=Array.isArray(old?.scenes)?old.scenes:[];const data={title,description:$("description").value.trim(),videoUrl,videoPath,badge:$("badge").value,scenes,templateMode:scenes.length?"editable-scenes":"video-template",published:true,updatedAt:firebase.firestore.FieldValue.serverTimestamp(),updatedBy:auth.currentUser.email};
+  const aiScenes=Array.isArray(window.hasanAiSceneSuggestions)?window.hasanAiSceneSuggestions:[];const scenes=aiScenes.length?aiScenes:(Array.isArray(old?.scenes)?old.scenes:[]);const data={title,description:$("description").value.trim(),videoUrl,videoPath,badge:$("badge").value,scenes,templateMode:scenes.length?"editable-scenes":"video-template",published:true,updatedAt:firebase.firestore.FieldValue.serverTimestamp(),updatedBy:auth.currentUser.email};
   if(id){await db.collection(COLLECTION).doc(id).update(data);}else{data.createdAt=firebase.firestore.FieldValue.serverTimestamp();await db.collection(COLLECTION).add(data);}
   $("uploadProgressLabel").textContent="Published successfully";$("uploadProgressPercent").textContent="100%";
   $("uploadProgressBar").style.width="100%";$("uploadProgressDetails").textContent="Template is now published on the homepage.";
